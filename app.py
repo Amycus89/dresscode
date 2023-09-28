@@ -79,6 +79,8 @@ def index():
             'sun_moon': sun_moon
         }
 
+        print(weather_info)
+
         # Return weather_info back to the browser
         return render_template('index.html', weather_info=weather_info)
     else:

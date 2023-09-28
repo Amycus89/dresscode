@@ -28,7 +28,6 @@ def index():
         weather_data = weather_request.json()
 
         # Save all the info needed in a variable
-        # START
         weather_description = weather_data['weather'][0]['description']
         # Get temperature in Kelvin
         temp = weather_data['main']['temp']
@@ -56,8 +55,6 @@ def index():
         # Convert from Unix timestamp format to readable format
         sunrise = datetime.utcfromtimestamp(sunrise).strftime('%Y-%m-%d %H:%M:%S')
         sunset = datetime.utcfromtimestamp(sunset).strftime('%Y-%m-%d %H:%M:%S')
-
-        #END
 
         # Store all of the info in a dictionary
         weather_info = {

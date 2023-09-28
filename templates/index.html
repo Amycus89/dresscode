@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DressCode</title>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        let x = document.getElementById("test");
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function (position) {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+
+            fetch("/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                latitude: lat,
+                longitude: lon,
+              }),
+            });
+          });
+        } else {
+          x.innerHTML = "Geolocation is not supported by this browser.";
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>DressCode</h1>
+        <nav></nav>
+      </div>
+    </header>
+
+    <h2>Hello, World👍</h2>
+    <main class="flex">
+      <div>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
+          quidem.
+        </p>
+        <p id="test"></p>
+      </div>
+      <div class="column"></div>
+    </main>
+
+    <footer>
+      <p>Copyright &#169; Daniel Svensson 2023</p>
+    </footer>
+  </body>
+</html>

@@ -15,10 +15,11 @@
     </header>
 
     <h2>Hello, World👍</h2>
+    <button id="getLocation">Get Location</button>
+    <p id="apology"></p>
     <main class="flex">
       <div class="weatherCard">
         <img id="weatherIcon" />
-        <p id="test"></p>
       </div>
       <div class="column"></div>
     </main>
@@ -27,6 +28,10 @@
       <p>Copyright &#169; Daniel Svensson 2023</p>
     </footer>
 
+    <!--Get weather_info from app.py-->
+    <script>
+      let weatherInfo = {{ weather_info|safe }};
+    </script>
     <script src="/static/script.js"></script>
   </body>
 </html>

@@ -1,5 +1,7 @@
-document.addEventListener("DOMContentLoaded", function () {
-  let x = document.getElementById("test");
+// Add eventlistener for id="getLocation" on click:
+document.getElementById("getLocation").addEventListener("click", function () {
+  console.log(weatherInfo.name);
+  let apology = document.getElementById("apology");
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function (position) {
       let lat = position.coords.latitude;
@@ -14,31 +16,27 @@ document.addEventListener("DOMContentLoaded", function () {
           latitude: lat,
           longitude: lon,
         }),
-      });
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          weatherInfo = data;
+          console.log(weatherInfo.name);
+        });
     });
   } else {
-    x.innerHTML = "Geolocation is not supported by this browser.";
+    apology.innerHTML = "Geolocation is not supported by this browser.";
   }
+});
 
-  // Get weather_info from app.py
-  let sunMoon;
-  let id;
-  let feelsLike;
-  let temp;
-
-  fetch("/")
-    .then((response) => response.json())
-    .then((data) => {
-      sunMoon = data.sun_moon;
-      id = data.id;
-      feelsLike = data.feels_like;
-      temp = data.temp;
-    });
+document.addEventListener("DOMContentLoaded", function () {
+  let sunMoon = weatherInfo.sun_moon;
+  let id = weatherInfo.id;
+  console.log(sunMoon);
+  console.log(id);
 
   let weatherImage = document.getElementById("weatherIcon");
-  // Get sun_moon value from weather_info
 
-  if (sunMoon === "sun") {
+  if (sunMoon == "sun") {
     if (id > 199 && id < 203) {
       weatherImage.src = "/static/weatherIcons/thunderstorms-day-rain.svg";
       weatherImage.alt = "Day with thunderstorm and rain";

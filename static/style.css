@@ -8,7 +8,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  wrap: wrap;
+  flex-wrap: wrap;
 }
 
 .weatherCard {

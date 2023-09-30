@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import requests
 import json
 import sqlite3
@@ -76,9 +76,10 @@ def index():
             'id': id,
             'sun_moon': sun_moon
         }
+        print(weather_info)
 
         # Return weather_info back to the browser
-        return render_template('index.html', weather_info=weather_info)
+        return jsonify(weather_info)
     else:
         # Request for the user's IP address
         ip = requests.get('https://api64.ipify.org?format=json').json()
@@ -152,7 +153,6 @@ def index():
 
         # convert dictionary to JSON
         weather_info = json.dumps(weather_info)
-        print(weather_info)
 
         # Return weather_info back to the browser
         return render_template('index.html', weather_info=weather_info)

@@ -1,5 +1,6 @@
 // Add eventlistener for id="getLocation" on click:
 document.getElementById("getLocation").addEventListener("click", function () {
+  console.log(weatherInfo.name);
   let apology = document.getElementById("apology");
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function (position) {
@@ -15,7 +16,12 @@ document.getElementById("getLocation").addEventListener("click", function () {
           latitude: lat,
           longitude: lon,
         }),
-      });
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          weatherInfo = data;
+          console.log(weatherInfo.name);
+        });
     });
   } else {
     apology.innerHTML = "Geolocation is not supported by this browser.";

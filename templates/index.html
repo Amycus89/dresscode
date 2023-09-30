@@ -28,7 +28,7 @@
       <p>Copyright &#169; Daniel Svensson 2023</p>
     </footer>
 
-    <!--Get weather_info from app.py-->
+    <!--Get weather_info from app.py. A common workaround is to define your variables in a <script> tag in your HTML file, as you've done, and then use those variables in your external JavaScript file.-->
     <script>
       let weatherInfo = {{ weather_info|safe }};
     </script>

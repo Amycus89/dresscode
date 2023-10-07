@@ -3,35 +3,113 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
     <link rel="stylesheet" href="/static/style.css" />
     <title>DressCode</title>
   </head>
   <body>
     <header>
-      <div>
-        <h1>DressCode</h1>
-        <nav></nav>
-      </div>
+      <nav>
+        <div class="banner">
+          <h1>DressCode</h1>
+
+          <form action="/" method="post" class="form" id="search-form">
+            <input
+              id="input"
+              type="search"
+              placeholder="Enter a location..."
+              name="city_name"
+            />
+            <img id="getLocation" src="/static/crosshair.svg" class="icon" />
+            <button id="search" type="submit">
+              <img src="/static/search.svg" />
+            </button>
+          </form>
+
+          <div class="social-icons">
+            <a href="https://github.com"><i class="fa fa-github"></i></a>
+            <a href="https://twitter.com"><i class="fa fa-twitter"></i></a>
+            <a href="https://linkedin.com"><i class="fa fa-linkedin"></i></a>
+            <a href="https://facebook.com"><i class="fa fa-facebook"></i></a>
+            <a href="https://codepen.io"><i class="fa fa-codepen"></i></a>
+          </div>
+        </div>
+      </nav>
     </header>
 
-    <h2>Hello, World👍</h2>
-    <button id="getLocation">Get Location</button>
-    <p id="apology"></p>
     <main class="flex">
-      <div class="weatherCard">
-        <img id="weatherIcon" />
-      </div>
-      <div class="column"></div>
+      <section class="flex weatherCard">
+        <div class="history">
+          <ul>
+            <!-- Search history buttons will be generated dynamically through javascript instead of jinja -->
+          </ul>
+        </div>
+
+        <div class="flex">
+          <img id="weatherIcon" />
+        </div>
+        <div class="column">
+          <h2 id="city-name"></h2>
+          <div class="info">
+            <p>Description:</p>
+            <p id="description">{{ weather_info.weather[0].description }}</p>
+          </div>
+
+          <div class="info">
+            <p>Temperature:</p>
+            <p id="temperature">{{ weather_info.main.temp }}&deg;C</p>
+          </div>
+
+          <div class="info">
+            <p>Humidity:</p>
+            <p id="humidity">{{ weather_info.main.humidity }}%</p>
+          </div>
+
+          <div class="info">
+            <p>Wind:</p>
+            <p id="wind">{{ weather_info.wind.speed }}m/s</p>
+          </div>
+
+          <div class="info">
+            <p>Pressure:</p>
+            <p id="pressure">{{ weather_info.main.pressure }}hPa</p>
+          </div>
+
+          <div class="info">
+            <p>Clouds:</p>
+            <p id="clouds">{{ weather_info.clouds.all }}</p>
+          </div>
+
+          <div class="info">
+            <p>Visibility:</p>
+            <p id="visibility">{{ weather_info.visibility }}m</p>
+          </div>
+          <p>Sunrise: {{ weather_info.sys.sunrise }}</p>
+          <p>Sunset: {{ weather_info.sys.sunset }}</p>
+        </div>
+      </section>
+
+      <section class="weatherCard">
+        <div class="column">
+          <h2>Fashion forecast</h2>
+          <p>TODO: Put stuff here!</p>
+        </div>
+      </section>
     </main>
 
     <footer>
       <p>Copyright &#169; Daniel Svensson 2023</p>
     </footer>
 
-    <!--Get weather_info from app.py. A common workaround is to define your variables in a <script> tag in your HTML file, as you've done, and then use those variables in your external JavaScript file.-->
     <script>
       let weatherInfo = {{ weather_info|safe }};
+      let searches = {{ searches|tojson }};
+      let apology = "{{ apology if apology else '' }}";
     </script>
+
     <script src="/static/script.js"></script>
   </body>
 </html>

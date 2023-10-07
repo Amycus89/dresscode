@@ -1,5 +1,7 @@
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
+from dotenv import load_dotenv
+import os
 import requests
 import json
 import sqlite3
@@ -7,152 +9,116 @@ import sqlite3
 # Configure application
 app = Flask(__name__, template_folder="templates")
 
+app.secret_key = 'my_secret_key'
+
 # Configure to use myDB.db as a database
 db = sqlite3.connect('myDB.db')
 
 #Find out the current latitude and longitude of user using geolocation
 # Store API key
-key = '4267f2641be9e115967b50caf509acef'
+load_dotenv('variables.env')
+key = os.getenv('key')
+
+def getWeatherInfo(lat, lon, key):
+    # Obtain a working url to find weather info based on user's location
+    coordinate_api_url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={key}"
+    # Request and store the data from it
+    weather_request=requests.get(coordinate_api_url)
+    weather_info = weather_request.json()
+    return weather_info
+
+
+def getCityWeatherInfo(city_name, key):
+    # Obtain a working url to find weather info based on user's input
+    city_api_url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={key}"
+    weather_request = requests.get(city_api_url)
+    weather_data = weather_request.json()
+    return weather_data
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    session['searches'] = session.get('searches', [])  # Initialize the 'searches' key with an empty list
     if request.method == 'POST':
-        # #request user location from the browser (javascript)
-        data = request.get_json()
-        latitude = data['latitude']
-        longitude = data['longitude']
+        # Save user input in a variable called "city_name"
+        city_name = request.form.get('city_name')
+        weather_data = getCityWeatherInfo(city_name, key)
 
-        # Obtain a working url to find weather info based on user's location
-        coordinate_api_url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={key}"
-        # Request and store the data from it
-        weather_request=requests.get(coordinate_api_url)
-        weather_data = weather_request.json()
+        # if the city name is not found, return an error. get() returns None without raising KeyError if key not present in dictionary
+        if weather_data.get('cod') == '404':
+            return jsonify(weather_data)
 
-        # Save all the info needed in a variable
-        weather_description = weather_data['weather'][0]['description']
-        # Get temperature in Kelvin
-        temp = weather_data['main']['temp']
-        temp_min = weather_data['main']['temp_min']
-        temp_max = weather_data['main']['temp_max']
-        feels_like = weather_data['main']['feels_like']
-        humidity = weather_data['main']['humidity']
-        pressure = weather_data['main']['pressure']
-        visibility = weather_data['visibility']
-        wind_speed = weather_data['wind']['speed']
-        wind_deg = weather_data['wind']['deg']
-        name = weather_data['name']
-        country = weather_data['sys']['country']
-        sunrise = weather_data['sys']['sunrise']
-        sunset = weather_data['sys']['sunset']
-        id = weather_data['id']
+        input = city_name.capitalize()
+        # Save only unique city_name to session
+        # Append the input to the list
+        session['searches'].append(input)
+        # Check if the most recently added item has an earlier duplicate
+        if session['searches'][-1] in session['searches'][:-1]:
+            #If yes, remove the earlier duplicate
+            session['searches'].remove(session['searches'][-1])
 
-        # Check if it's day or night
-        sun_moon = ''
-        if sunrise < sunset:
-            sun_moon = 'sun'
-        else:
-            sun_moon = 'moon'
+        while len(session['searches']) > 4:
+            session['searches'].pop(0)
 
-        # Convert from Unix timestamp format to readable format
-        sunrise = datetime.utcfromtimestamp(sunrise).strftime('%Y-%m-%d %H:%M:%S')
-        sunset = datetime.utcfromtimestamp(sunset).strftime('%Y-%m-%d %H:%M:%S')
-
-        # Store all of the info in a dictionary
-        weather_info = {
-            'weather_description': weather_description,
-            'temp': temp,
-            'temp_min': temp_min,
-            'temp_max': temp_max,
-            'feels_like': feels_like,
-            'humidity': humidity,
-            'pressure': pressure,
-            'visibility': visibility,
-            'wind_speed': wind_speed,
-            'wind_deg': wind_deg,
-            'name': name,
-            'country': country,
-            'sunrise': sunrise,
-            'sunset': sunset,
-            'id': id,
-            'sun_moon': sun_moon
-        }
-        print(weather_info)
-
+        session['lat'] = weather_data['coord']['lat']
+        session['lon'] = weather_data['coord']['lon']
+        weather_info = weather_data
+        searches = session.get('searches', [])
         # Return weather_info back to the browser
-        return jsonify(weather_info)
+        return jsonify(weather_info, searches)
     else:
-        # Request for the user's IP address
-        ip = requests.get('https://api64.ipify.org?format=json').json()
-        # Store the IP address in a variable
-        ip_address = ip['ip']
+        # Using the GET method
+        #Check if session['lat'] and session['lon'] are not None, indicating first time user
+        if session.get('lat') is None or session.get('lon') is None:
+            # Request for the user's IP address
+            ip = requests.get('https://api64.ipify.org?format=json').json()
+            # Store the IP address in a variable
+            ip_address = ip['ip']
 
-        location_data = requests.get(f'http://ip-api.com/json/{ip_address}?fields=status,message,country,regionName,city,lat,lon,offset').json()
+            location_data = requests.get(f'http://ip-api.com/json/{ip_address}?fields=status,message,country,regionName,city,lat,lon').json()
 
-        # Save all the info needed in their own variables
+            # Save all the info needed in their own variables
 
-        latitude = location_data['lat']
-        longitude = location_data['lon']
-        # Timezone offset in seconds:
-        timezone = location_data['offset']
+            #latitude = location_data['lat']
+            #longitude = location_data['lon']
 
-        # Obtain a working url to find weather info based on user's location
-        coordinate_api_url = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={key}"
-        # Request and store the data from it
-        weather_request=requests.get(coordinate_api_url)
-        weather_data = weather_request.json()
+            session['lat'] = location_data['lat']
+            session['lon'] = location_data['lon']
 
+            weather_info = getWeatherInfo(session['lat'], session['lon'], key)
 
-        # Save all the info needed in a variable
-        weather_description = weather_data['weather'][0]['description']
-        # Get temperature in Kelvin
-        temp = weather_data['main']['temp']
-        temp_min = weather_data['main']['temp_min']
-        temp_max = weather_data['main']['temp_max']
-        feels_like = weather_data['main']['feels_like']
-        humidity = weather_data['main']['humidity']
-        pressure = weather_data['main']['pressure']
-        visibility = weather_data['visibility']
-        wind_speed = weather_data['wind']['speed']
-        wind_deg = weather_data['wind']['deg']
-        name = weather_data['name']
-        country = weather_data['sys']['country']
-        sunrise = weather_data['sys']['sunrise']
-        sunset = weather_data['sys']['sunset']
-        id = weather_data['id']
-
-        # Check if it's day or night
-        sun_moon = ''
-        if sunrise < sunset:
-            sun_moon = 'sun'
+            # Return weather_info back to the browser
+            print(weather_info)
+            return render_template('index.html', weather_info=weather_info)
         else:
-            sun_moon = 'moon'
+            # Return weather_info back to the browser based on session['lat'] and session['lon']
+            weather_info = getWeatherInfo(session['lat'], session['lon'], key)
+            return render_template('index.html', weather_info=weather_info, searches=session.get('searches', []))
 
-        # Convert from Unix timestamp format to readable format
-        sunrise = datetime.utcfromtimestamp(sunrise).strftime('%Y-%m-%d %H:%M:%S')
-        sunset = datetime.utcfromtimestamp(sunset).strftime('%Y-%m-%d %H:%M:%S')
-
-        # Store all of the info in a dictionary
-        weather_info = {
-            'weather_description': weather_description,
-            'temp': temp,
-            'temp_min': temp_min,
-            'temp_max': temp_max,
-            'feels_like': feels_like,
-            'humidity': humidity,
-            'pressure': pressure,
-            'visibility': visibility,
-            'wind_speed': wind_speed,
-            'wind_deg': wind_deg,
-            'name': name,
-            'country': country,
-            'sunrise': sunrise,
-            'sunset': sunset,
-            'id': id,
-            'sun_moon': sun_moon
-        }
-
-        # convert dictionary to JSON
-        weather_info = json.dumps(weather_info)
-
+@app.route('/locate', methods=['POST'])
+def locate():
+        # request user location from the browser (javascript)
+        data = request.get_json()
+        # Store lat and lon in session
+        session['lat'] = data['latitude']
+        session['lon'] = data['longitude']
+        weather_info = getWeatherInfo(session['lat'], session['lon'], key)
         # Return weather_info back to the browser
-        return render_template('index.html', weather_info=weather_info)
+        print(weather_info)
+        return jsonify(weather_info)
+
+@app.route('/shortcut', methods=['POST'])
+def shortcut():
+    city_name = request.form.get('city_name')
+    weather_data = getCityWeatherInfo(city_name, key)
+    session['lat'] = weather_data['coord']['lat']
+    session['lon'] = weather_data['coord']['lon']
+    weather_info = weather_data
+    print(weather_info)
+    return jsonify(weather_info)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+# Convert from Unix timestamp format to readable format
+        #sunrise = datetime.utcfromtimestamp(sunrise).strftime('%Y-%m-%d %H:%M:%S')
+        #sunset = datetime.utcfromtimestamp(sunset).strftime('%Y-%m-%d %H:%M:%S')

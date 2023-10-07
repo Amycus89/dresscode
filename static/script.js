@@ -1,13 +1,62 @@
-// Add eventlistener for id="getLocation" on click:
+const cityNameElement = document.getElementById("city-name");
+const input = document.getElementById("input");
+const form = document.getElementById("search-form");
+const historyContainer = document.querySelector(".history ul");
+
+// Function to load history shortcut buttons
+const loadHistory = function (searchData) {
+  // Loop through the searches array in data and create buttons
+  searchData.forEach((search) => {
+    const li = document.createElement("li");
+    const form = document.createElement("form");
+    const input = document.createElement("input");
+    const button = document.createElement("button");
+
+    form.action = "/shortcut";
+    form.method = "POST";
+    input.type = "hidden";
+    input.name = "city_name";
+    input.value = search;
+    button.type = "submit";
+    button.textContent = search;
+
+    form.appendChild(li);
+    li.appendChild(input);
+    li.appendChild(button);
+    historyContainer.appendChild(form);
+  });
+
+  // Activate generated buttons
+  let buttons = document.querySelectorAll(".history button");
+  buttons.forEach((button) => {
+    button.addEventListener("click", function (buttonClick) {
+      buttonClick.preventDefault();
+      let cityNameValue = this.textContent;
+      let requestBody = new URLSearchParams();
+
+      requestBody.append("city_name", cityNameValue);
+      fetch("/shortcut", {
+        method: "POST",
+        body: requestBody,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          cityNameElement.innerHTML = data.name;
+          let temperature = data.main.temp;
+          let weatherDescription = data.weather[0].description;
+        });
+    });
+  });
+};
+
+// Code for button to get user's location by geolocation
 document.getElementById("getLocation").addEventListener("click", function () {
-  console.log(weatherInfo.name);
-  let apology = document.getElementById("apology");
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function (position) {
       let lat = position.coords.latitude;
       let lon = position.coords.longitude;
 
-      fetch("/", {
+      fetch("/locate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -20,19 +69,27 @@ document.getElementById("getLocation").addEventListener("click", function () {
         .then((response) => response.json())
         .then((data) => {
           weatherInfo = data;
-          console.log(weatherInfo.name);
+          cityNameElement.innerHTML = weatherInfo.name;
         });
     });
   } else {
-    apology.innerHTML = "Geolocation is not supported by this browser.";
+    input.innerHTML = "Geolocation is not supported by this browser.";
   }
 });
 
+// Run this code when the user first visits the site:
 document.addEventListener("DOMContentLoaded", function () {
-  let sunMoon = weatherInfo.sun_moon;
-  let id = weatherInfo.id;
-  console.log(sunMoon);
-  console.log(id);
+  // Setup history shortcut buttons
+  loadHistory(searches);
+
+  // TODO: Get the current time:
+
+  // placeholder for sunMoon
+  cityNameElement.innerHTML = weatherInfo.name;
+  let sunMoon = "sun";
+  let id = weatherInfo.weather[0].id;
+  let currentHours = new Date().getHours();
+  let currentMinutes = new Date().getMinutes();
 
   let weatherImage = document.getElementById("weatherIcon");
 
@@ -156,4 +213,43 @@ document.addEventListener("DOMContentLoaded", function () {
       weatherImage.alt = "Cloudy night";
     }
   }
+});
+
+// Search city name by typing
+// Add event listener to form's submit event
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const formData = new FormData(form);
+
+  // Make AJAX request to Flask route
+  fetch("/", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      input.value = "";
+      // Check if respons has weather_info
+      if (data.cod == "404") {
+        // If so, display an error message
+        input.placeholder = "City not found";
+        input.classList.add("red");
+
+        setTimeout(function () {
+          input.placeholder = "Enter a location...";
+          input.classList.remove("red");
+        }, 2000);
+      } else {
+        // else, display the weather info
+        weatherInfo = data[0];
+        cityNameElement.innerHTML = weatherInfo.name;
+        let temperature = weatherInfo.main.temp;
+
+        // Clear exisitng buttons
+        historyContainer.innerHTML = "";
+
+        // Loop through the searches array in data and create buttons
+        loadHistory(data[1]);
+      }
+    });
 });

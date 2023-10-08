@@ -50,7 +50,11 @@
 
         <div class="flex">
           <img id="weatherIcon" />
+          <div id="clock">
+            <p></p>
+          </div>
         </div>
+
         <div class="column">
           <h2 id="city-name"></h2>
           <div class="info">
@@ -61,6 +65,21 @@
           <div class="info">
             <p>Temperature:</p>
             <p id="temperature">{{ weather_info.main.temp }}&deg;C</p>
+          </div>
+
+          <div class="info">
+            <p>Feels like:</p>
+            <p id="feelsLike">{{ weather_info.main.feels_like }}&deg;C</p>
+          </div>
+
+          <div class="info">
+            <p>Min temp:</p>
+            <p id="temp_min">{{ weather_info.main.temp_min }}&deg;C</p>
+          </div>
+
+          <div class="info">
+            <p>Max temp:</p>
+            <p id="temp_max">{{ weather_info.main.temp_max }}&deg;C</p>
           </div>
 
           <div class="info">
@@ -76,11 +95,6 @@
           <div class="info">
             <p>Pressure:</p>
             <p id="pressure">{{ weather_info.main.pressure }}hPa</p>
-          </div>
-
-          <div class="info">
-            <p>Clouds:</p>
-            <p id="clouds">{{ weather_info.clouds.all }}</p>
           </div>
 
           <div class="info">

@@ -1,7 +1,50 @@
-const cityNameElement = document.getElementById("city-name");
+const temperatureElement = document.getElementById("temperature");
+const feelsLikeElement = document.getElementById("feelsLike");
+const tempMinElement = document.getElementById("temp_min");
+const tempMaxElement = document.getElementById("temp_max");
+
+const sunriseElement = document.getElementById("sunrise");
+const sunsetElement = document.getElementById("sunset");
+const weatherIconElement = document.getElementById("weatherIcon");
+
 const input = document.getElementById("input");
 const form = document.getElementById("search-form");
 const historyContainer = document.querySelector(".history ul");
+
+const updateWeatherInfo = function (data) {
+  document.getElementById("city-name").innerHTML = data.name;
+  document.getElementById("description").innerHTML =
+    data.weather[0].description;
+  temperatureElement.innerHTML = data.main.temp;
+  feelsLikeElement.innerHTML = data.main.feels_like;
+  tempMinElement.innerHTML = data.main.temp_min;
+  tempMaxElement.innerHTML = data.main.temp_max;
+  document.getElementById("humidity").innerHTML = data.main.humidity;
+  document.getElementById("visibility").innerHTML = data.visibility;
+  document.getElementById("wind").innerHTML = data.wind.speed;
+  document.getElementById("pressure").innerHTML = data.main.pressure;
+  console.log(data.sys.sunrise);
+  console.log(data.sys.sunset);
+};
+
+// Function to get the time and date
+const updateClock = function (timeZone) {
+  // Clear any previous instance of updateClock() running
+  clearInterval(intervalId);
+  // Update the clock every second
+  intervalId = setInterval(() => {
+    let userTime = new Date(); // Get user's local time
+    let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
+    let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
+    let defaultDate = new Date(defaultTime);
+    let localTime = new Date(defaultDate.getTime() + timeZone * 1000);
+    let hours = String(localTime.getHours()).padStart(2, "0");
+    let minutes = String(localTime.getMinutes()).padStart(2, "0");
+    let seconds = String(localTime.getSeconds()).padStart(2, "0");
+    let timestring = hours + ":" + minutes + ":" + seconds;
+    document.getElementById("clock").innerHTML = timestring;
+  }, 1000);
+};
 
 // Function to load history shortcut buttons
 const loadHistory = function (searchData) {
@@ -41,13 +84,15 @@ const loadHistory = function (searchData) {
       })
         .then((response) => response.json())
         .then((data) => {
-          cityNameElement.innerHTML = data.name;
-          let temperature = data.main.temp;
-          let weatherDescription = data.weather[0].description;
+          updateWeatherInfo(data);
+          updateClock(data.timezone);
         });
     });
   });
 };
+
+/////////////
+////////////
 
 // Code for button to get user's location by geolocation
 document.getElementById("getLocation").addEventListener("click", function () {
@@ -68,8 +113,8 @@ document.getElementById("getLocation").addEventListener("click", function () {
       })
         .then((response) => response.json())
         .then((data) => {
-          weatherInfo = data;
-          cityNameElement.innerHTML = weatherInfo.name;
+          updateWeatherInfo(data);
+          updateClock(data.timezone);
         });
     });
   } else {
@@ -77,140 +122,151 @@ document.getElementById("getLocation").addEventListener("click", function () {
   }
 });
 
+// Main
 // Run this code when the user first visits the site:
 document.addEventListener("DOMContentLoaded", function () {
+  // Setup time
+  intervalId = null;
+  updateClock(weatherInfo.timezone);
   // Setup history shortcut buttons
   loadHistory(searches);
 
-  // TODO: Get the current time:
-
-  // placeholder for sunMoon
-  cityNameElement.innerHTML = weatherInfo.name;
+  // placeholders
   let sunMoon = "sun";
-  let id = weatherInfo.weather[0].id;
-  let currentHours = new Date().getHours();
-  let currentMinutes = new Date().getMinutes();
-
-  let weatherImage = document.getElementById("weatherIcon");
+  let id = 200;
 
   if (sunMoon == "sun") {
     if (id > 199 && id < 203) {
-      weatherImage.src = "/static/weatherIcons/thunderstorms-day-rain.svg";
-      weatherImage.alt = "Day with thunderstorm and rain";
+      weatherIconElement.src =
+        "/static/weatherIcons/thunderstorms-day-rain.svg";
+      weatherIconElement.alt = "Day with thunderstorm and rain";
     } else if (id > 299 && id < 322) {
-      weatherImage.src = "/static/weatherIcons/thunderstorms-day.svg";
-      weatherImage.alt = "Day with thunderstorm";
+      weatherIconElement.src = "/static/weatherIcons/thunderstorms-day.svg";
+      weatherIconElement.alt = "Day with thunderstorm";
     } else if (id > 229 && id < 233) {
-      weatherImage.src = "/static/weatherIcons/thunderstorms-day-snow.svg";
-      weatherImage.alt = "Day with thunderstorm and drizzle";
+      weatherIconElement.src =
+        "/static/weatherIcons/thunderstorms-day-snow.svg";
+      weatherIconElement.alt = "Day with thunderstorm and drizzle";
     } else if (id > 299 && id < 322) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-day-drizzle.svg";
-      weatherImage.alt = "Day with drizzle";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-day-drizzle.svg";
+      weatherIconElement.alt = "Day with drizzle";
     } else if (id > 499 && id < 532) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-day-rain.svg";
-      weatherImage.alt = "Day with rain";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-day-rain.svg";
+      weatherIconElement.alt = "Day with rain";
     } else if (id > 599 && id < 603) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-day-snow.svg";
-      weatherImage.alt = "Day with snow";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-day-snow.svg";
+      weatherIconElement.alt = "Day with snow";
     } else if (id > 610 && id < 614) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-day-sleet.svg";
-      weatherImage.alt = "Day with sleet";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-day-sleet.svg";
+      weatherIconElement.alt = "Day with sleet";
     } else if (id > 614 && id < 623) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-day-sleet.svg";
-      weatherImage.alt = "Day with rain and snow";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-day-sleet.svg";
+      weatherIconElement.alt = "Day with rain and snow";
     } else if (id > 700 && id < 703) {
-      weatherImage.src = "/static/weatherIcons/mist.svg";
-      weatherImage.alt = "Day with mist";
+      weatherIconElement.src = "/static/weatherIcons/mist.svg";
+      weatherIconElement.alt = "Day with mist";
     } else if (id > 710 && id < 712) {
-      weatherImage.src = "/static/weatherIcons/smoke-particles.svg";
-      weatherImage.alt = "Day with smoke particles";
+      weatherIconElement.src = "/static/weatherIcons/smoke-particles.svg";
+      weatherIconElement.alt = "Day with smoke particles";
     } else if (id > 720 && id < 723) {
-      weatherImage.src = "/static/weatherIcons/haze-day.svg";
-      weatherImage.alt = "Day with haze";
+      weatherIconElement.src = "/static/weatherIcons/haze-day.svg";
+      weatherIconElement.alt = "Day with haze";
     } else if ((id > 730 && id < 732) || id == 761) {
-      weatherImage.src = "/static/weatherIcons/dust-day.svg";
-      weatherImage.alt = "Day with dust whirls";
+      weatherIconElement.src = "/static/weatherIcons/dust-day.svg";
+      weatherIconElement.alt = "Day with dust whirls";
     } else if (id > 740 && id < 742) {
-      weatherImage.src = "/static/weatherIcons/fog-day.svg";
-      weatherImage.alt = "Day with fog";
+      weatherIconElement.src = "/static/weatherIcons/fog-day.svg";
+      weatherIconElement.alt = "Day with fog";
     } else if (id == 751) {
-      weatherImage.src = "/static/weatherIcons/dust-day.svg";
-      weatherImage.alt = "Day with sand storms";
+      weatherIconElement.src = "/static/weatherIcons/dust-day.svg";
+      weatherIconElement.alt = "Day with sand storms";
     } else if (id == 762) {
-      weatherImage.src = "/static/weatherIcons/ash.svg";
-      weatherImage.alt = "Day with ash";
+      weatherIconElement.src = "/static/weatherIcons/ash.svg";
+      weatherIconElement.alt = "Day with ash";
     } else if (id == 771) {
-      weatherImage.src = "/static/weatherIcons/wind.svg";
-      weatherImage.alt = "Day with squalls";
+      weatherIconElement.src = "/static/weatherIcons/wind.svg";
+      weatherIconElement.alt = "Day with squalls";
     } else if (id == 781) {
-      weatherImage.src = "/static/weatherIcons/tornado.svg";
-      weatherImage.alt = "Day with tornado";
+      weatherIconElement.src = "/static/weatherIcons/tornado.svg";
+      weatherIconElement.alt = "Day with tornado";
     } else if (id == 800) {
-      weatherImage.src = "/static/weatherIcons/clear-day.svg";
-      weatherImage.alt = "Day with clear sky";
+      weatherIconElement.src = "/static/weatherIcons/clear-day.svg";
+      weatherIconElement.alt = "Day with clear sky";
     } else {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-day.svg";
-      weatherImage.alt = "Cloudy day";
+      weatherIconElement.src = "/static/weatherIcons/partly-cloudy-day.svg";
+      weatherIconElement.alt = "Cloudy day";
     }
   } else {
     // Else if moon:
     if (id > 199 && id < 203) {
-      weatherImage.src = "/static/weatherIcons/thunderstorms-night-rain.svg";
-      weatherImage.alt = "Night with thunderstorm and rain";
+      weatherIconElement.src =
+        "/static/weatherIcons/thunderstorms-night-rain.svg";
+      weatherIconElement.alt = "Night with thunderstorm and rain";
     } else if (id > 299 && id < 322) {
-      weatherImage.src = "/static/weatherIcons/thunderstorms-night.svg";
-      weatherImage.alt = "Night with thunderstorm";
+      weatherIconElement.src = "/static/weatherIcons/thunderstorms-night.svg";
+      weatherIconElement.alt = "Night with thunderstorm";
     } else if (id > 229 && id < 233) {
-      weatherImage.src = "/static/weatherIcons/thunderstorms-night-snow.svg";
-      weatherImage.alt = "Night with thunderstorm and drizzle";
+      weatherIconElement.src =
+        "/static/weatherIcons/thunderstorms-night-snow.svg";
+      weatherIconElement.alt = "Night with thunderstorm and drizzle";
     } else if (id > 299 && id < 322) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-night-drizzle.svg";
-      weatherImage.alt = "Night with drizzle";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-night-drizzle.svg";
+      weatherIconElement.alt = "Night with drizzle";
     } else if (id > 499 && id < 532) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-night-rain.svg";
-      weatherImage.alt = "Night with rain";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-night-rain.svg";
+      weatherIconElement.alt = "Night with rain";
     } else if (id > 599 && id < 603) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-night-snow.svg";
-      weatherImage.alt = "Night with snow";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-night-snow.svg";
+      weatherIconElement.alt = "Night with snow";
     } else if (id > 610 && id < 614) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-night-sleet.svg";
-      weatherImage.alt = "Night with sleet";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-night-sleet.svg";
+      weatherIconElement.alt = "Night with sleet";
     } else if (id > 614 && id < 623) {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-night-sleet.svg";
-      weatherImage.alt = "Night with rain and snow";
+      weatherIconElement.src =
+        "/static/weatherIcons/partly-cloudy-night-sleet.svg";
+      weatherIconElement.alt = "Night with rain and snow";
     } else if (id > 700 && id < 703) {
-      weatherImage.src = "/static/weatherIcons/mist.svg";
-      weatherImage.alt = "Night with mist";
+      weatherIconElement.src = "/static/weatherIcons/mist.svg";
+      weatherIconElement.alt = "Night with mist";
     } else if (id > 710 && id < 712) {
-      weatherImage.src = "/static/weatherIcons/smoke-particles.svg";
-      weatherImage.alt = "Night with smoke particles";
+      weatherIconElement.src = "/static/weatherIcons/smoke-particles.svg";
+      weatherIconElement.alt = "Night with smoke particles";
     } else if (id > 720 && id < 723) {
-      weatherImage.src = "/static/weatherIcons/haze-night.svg";
-      weatherImage.alt = "Night with haze";
+      weatherIconElement.src = "/static/weatherIcons/haze-night.svg";
+      weatherIconElement.alt = "Night with haze";
     } else if ((id > 730 && id < 732) || id == 761) {
-      weatherImage.src = "/static/weatherIcons/dust-night.svg";
-      weatherImage.alt = "Night with dust whirls";
+      weatherIconElement.src = "/static/weatherIcons/dust-night.svg";
+      weatherIconElement.alt = "Night with dust whirls";
     } else if (id > 740 && id < 742) {
-      weatherImage.src = "/static/weatherIcons/fog-night.svg";
-      weatherImage.alt = "Night with fog";
+      weatherIconElement.src = "/static/weatherIcons/fog-night.svg";
+      weatherIconElement.alt = "Night with fog";
     } else if (id == 751) {
-      weatherImage.src = "/static/weatherIcons/dust-night.svg";
-      weatherImage.alt = "Night with sand storms";
+      weatherIconElement.src = "/static/weatherIcons/dust-night.svg";
+      weatherIconElement.alt = "Night with sand storms";
     } else if (id == 762) {
-      weatherImage.src = "/static/weatherIcons/ash.svg";
-      weatherImage.alt = "Night with ash";
+      weatherIconElement.src = "/static/weatherIcons/ash.svg";
+      weatherIconElement.alt = "Night with ash";
     } else if (id == 771) {
-      weatherImage.src = "/static/weatherIcons/wind.svg";
-      weatherImage.alt = "Night with squalls";
+      weatherIconElement.src = "/static/weatherIcons/wind.svg";
+      weatherIconElement.alt = "Night with squalls";
     } else if (id == 781) {
-      weatherImage.src = "/static/weatherIcons/tornado.svg";
-      weatherImage.alt = "Night with tornado";
+      weatherIconElement.src = "/static/weatherIcons/tornado.svg";
+      weatherIconElement.alt = "Night with tornado";
     } else if (id == 800) {
-      weatherImage.src = "/static/weatherIcons/starry-night.svg";
-      weatherImage.alt = "Night with clear sky";
+      weatherIconElement.src = "/static/weatherIcons/starry-night.svg";
+      weatherIconElement.alt = "Night with clear sky";
     } else {
-      weatherImage.src = "/static/weatherIcons/partly-cloudy-night.svg";
-      weatherImage.alt = "Cloudy night";
+      weatherIconElement.src = "/static/weatherIcons/partly-cloudy-night.svg";
+      weatherIconElement.alt = "Cloudy night";
     }
   }
 });
@@ -241,11 +297,10 @@ form.addEventListener("submit", (event) => {
         }, 2000);
       } else {
         // else, display the weather info
-        weatherInfo = data[0];
-        cityNameElement.innerHTML = weatherInfo.name;
-        let temperature = weatherInfo.main.temp;
+        updateWeatherInfo(data[0]);
+        updateClock(data[0].timezone);
 
-        // Clear exisitng buttons
+        // Clear existing buttons
         historyContainer.innerHTML = "";
 
         // Loop through the searches array in data and create buttons

@@ -37,7 +37,7 @@ li button {
   padding-top: 5px;
   padding-bottom: 5px;
   box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-  margin: 15px;
+  margin: 12px;
 }
 
 .banner {
@@ -83,13 +83,21 @@ button img {
   height: 16px;
 }
 
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: calc(100vh - 64px);
+}
+
 section {
   position: relative;
 }
 
 .history {
   position: absolute;
-  top: -25px;
+  top: -23px;
   left: -15px;
 }
 
@@ -113,6 +121,10 @@ section {
   justify-content: center;
 }
 
+.info p {
+  display: inline-block;
+}
+
 .weatherCard {
   background-color: white;
   width: 45%;
@@ -124,13 +136,36 @@ section {
 }
 
 #weatherIcon {
-  width: 50%;
+  width: 400px;
+  height: 400px;
+  position: absolute;
+}
+
+#units {
+  width: 18px;
+  cursor: pointer;
+}
+
+.iconFrame {
+  border-radius: 50%;
+  width: 320px;
+  height: 320px;
+  border: 1px solid #23252a;
+  overflow: hidden;
+  position: relative;
+}
+
+.iconFrame p {
+  text-align: center;
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
 }
 
 footer {
   background-color: #23252a;
-  position: absolute;
-  bottom: 0;
   width: 100%;
   height: 2.5rem;
   color: white;

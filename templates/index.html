@@ -29,6 +29,8 @@
             </button>
           </form>
 
+          <img src="/static/units.svg" alt="Switch between Celcius and Fahrenheit" id="units"></img>
+
           <div class="social-icons">
             <a href="https://github.com"><i class="fa fa-github"></i></a>
             <a href="https://twitter.com"><i class="fa fa-twitter"></i></a>
@@ -40,83 +42,86 @@
       </nav>
     </header>
 
-    <main class="flex">
-      <section class="flex weatherCard">
-        <div class="history">
-          <ul>
-            <!-- Search history buttons will be generated dynamically through javascript instead of jinja -->
-          </ul>
-        </div>
-
-        <div class="flex">
-          <img id="weatherIcon" />
-          <div id="clock">
-            <p></p>
-          </div>
-        </div>
-
-        <div class="column">
-          <h2 id="city-name">{{ weather_info.name }}</h2>
-          <div class="info">
-            <p>Description:</p>
-            <p id="description">{{ weather_info.weather[0].description }}</p>
+    <main>
+      <div class="flex">
+        <section class="flex weatherCard">
+          <div class="history">
+            <ul>
+              <!-- Search history buttons will be generated dynamically through javascript instead of jinja -->
+            </ul>
           </div>
 
-          <div class="info">
-            <p>Temperature:</p>
-            <p id="temperature">{{ weather_info.main.temp }}&deg;C</p>
+          <div class="column">
+            <div class="iconFrame flex">
+              <img id="weatherIcon" />
+              <p id="description">{{ weather_info.weather[0].description }}</p>
+            </div>
+            <h2 id="city-name">{{ weather_info.name }}</h2>
           </div>
 
-          <div class="info">
-            <p>Feels like:</p>
-            <p id="feelsLike">{{ weather_info.main.feels_like }}&deg;C</p>
-          </div>
+          <div class="row">
+            <div class="column">
+              <div class="info">
+                <p>Temperature:</p>
+                <p id="temperature"></p>
+              </div>
 
-          <div class="info">
-            <p>Min temp:</p>
-            <p id="temp_min">{{ weather_info.main.temp_min }}&deg;C</p>
-          </div>
+              <div class="info">
+                <p>Feels like:</p>
+                <p id="feelsLike"></p>
+              </div>
 
-          <div class="info">
-            <p>Max temp:</p>
-            <p id="temp_max">{{ weather_info.main.temp_max }}&deg;C</p>
-          </div>
+              <div class="info">
+                <p>Min temp:</p>
+                <p id="temp_min"></p>
+              </div>
 
-          <div class="info">
-            <p>Humidity:</p>
-            <p id="humidity">{{ weather_info.main.humidity }}%</p>
-          </div>
+              <div class="info">
+                <p>Max temp:</p>
+                <p id="temp_max"></p>
+              </div>
 
-          <div class="info">
-            <p>Wind:</p>
-            <p id="wind">{{ weather_info.wind.speed }}m/s</p>
-          </div>
+              <div class="info">
+                <p>Humidity:</p>
+                <p id="humidity">{{ weather_info.main.humidity }}%</p>
+              </div>
 
-          <div class="info">
-            <p>Pressure:</p>
-            <p id="pressure">{{ weather_info.main.pressure }}hPa</p>
-          </div>
+              <div class="info">
+                <p>Wind:</p>
+                <p id="wind">{{ weather_info.wind.speed }}m/s</p>
+              </div>
 
-          <div class="info">
-            <p>Visibility:</p>
-            <p id="visibility">{{ weather_info.visibility }}m</p>
+              <div class="info">
+                <p>Pressure:</p>
+                <p id="pressure">{{ weather_info.main.pressure }}hPa</p>
+              </div>
+
+              <div class="info">
+                <p>Visibility:</p>
+                <p id="visibility">{{ weather_info.visibility }}m</p>
+              </div>
+            </div>
           </div>
-          <p>Sunrise: {{ weather_info.sys.sunrise }}</p>
-          <p>Sunset: {{ weather_info.sys.sunset }}</p>
-        </div>
-      </section>
+        </section>
+
+        <section class="weatherCard">
+          <div class="column">
+            <h2>Fashion forecast</h2>
+            <p>TODO: Put stuff here!</p>
+          </div>
+        </section>
+      </div>
 
       <section class="weatherCard">
-        <div class="column">
-          <h2>Fashion forecast</h2>
-          <p>TODO: Put stuff here!</p>
-        </div>
+        <p>Sunrise: {{ weather_info.sys.sunrise }}</p>
+        <div id="clock"></div>
+        <p>Sunset: {{ weather_info.sys.sunset }}</p>
       </section>
-    </main>
 
-    <footer>
-      <p>Copyright &#169; Daniel Svensson 2023</p>
-    </footer>
+      <footer class="column">
+        <p>Copyright &#169; Daniel Svensson 2023</p>
+      </footer>
+    </main>
 
     <script>
       let weatherInfo = {{ weather_info|safe }};

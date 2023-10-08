@@ -11,14 +11,63 @@ const input = document.getElementById("input");
 const form = document.getElementById("search-form");
 const historyContainer = document.querySelector(".history ul");
 
+const unitsElement = document.getElementById("units");
+
+// On click, units should update all values to fahrenheit or celcius using unitConverter():
+unitsElement.addEventListener("click", function () {
+  if (temperatureUnit === "c") {
+    temperatureUnit = "f";
+  } else {
+    temperatureUnit = "c";
+  }
+  // Update content inside temperatureElement, feelsLikeElement, tempMiniElement and tempMaxElement:
+  temperatureElement.innerHTML =
+    unitConvert(weatherInfo.main.temp).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  feelsLikeElement.innerHTML =
+    unitConvert(weatherInfo.main.feels_like).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  tempMinElement.innerHTML =
+    unitConvert(weatherInfo.main.temp_min).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  tempMaxElement.innerHTML =
+    unitConvert(weatherInfo.main.temp_max).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+});
+
+// Function to calculate celcius or fahrenheit from kelvin
+const unitConvert = function (kelvin) {
+  if (temperatureUnit === "c") {
+    return kelvin - 273;
+  } else {
+    return ((kelvin - 273) * 9) / 5 + 32;
+  }
+};
+
 const updateWeatherInfo = function (data) {
   document.getElementById("city-name").innerHTML = data.name;
   document.getElementById("description").innerHTML =
     data.weather[0].description;
-  temperatureElement.innerHTML = data.main.temp;
-  feelsLikeElement.innerHTML = data.main.feels_like;
-  tempMinElement.innerHTML = data.main.temp_min;
-  tempMaxElement.innerHTML = data.main.temp_max;
+  temperatureElement.innerHTML =
+    unitConvert(data.main.temp).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  feelsLikeElement.innerHTML =
+    unitConvert(data.main.feels_like).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  tempMinElement.innerHTML =
+    unitConvert(data.main.temp_min).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  tempMaxElement.innerHTML =
+    unitConvert(data.main.temp_max).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
   document.getElementById("humidity").innerHTML = data.main.humidity;
   document.getElementById("visibility").innerHTML = data.visibility;
   document.getElementById("wind").innerHTML = data.wind.speed;
@@ -282,6 +331,7 @@ const loadHistory = function (searchData) {
           let sunrise = data.sys.sunrise;
           let sunset = data.sys.sunset;
           updateWeatherIcon(data.weather[0].id, currentTime, sunrise, sunset);
+          weatherInfo = data;
         });
     });
   });
@@ -314,6 +364,7 @@ document.getElementById("getLocation").addEventListener("click", function () {
           let sunrise = data.sys.sunrise;
           let sunset = data.sys.sunset;
           updateWeatherIcon(data.weather[0].id, currentTime, sunrise, sunset);
+          weatherInfo = data;
         });
     });
   } else {
@@ -324,6 +375,9 @@ document.getElementById("getLocation").addEventListener("click", function () {
 // Main
 // Run this code when the user first visits the site:
 document.addEventListener("DOMContentLoaded", function () {
+  // Setup initial temperature unit
+  temperatureUnit = "c";
+
   // Setup time
   intervalId = null;
   let currentTime = updateClock(weatherInfo.timezone);
@@ -334,7 +388,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Setup history shortcut buttons
   loadHistory(searches);
 
-  // placeholders
+  updateWeatherInfo(weatherInfo);
 });
 
 // Search city name by typing
@@ -368,6 +422,7 @@ form.addEventListener("submit", (event) => {
         let sunrise = data[0].sys.sunrise;
         let sunset = data[0].sys.sunset;
         updateWeatherIcon(data[0].weather[0].id, currentTime, sunrise, sunset);
+        weatherInfo = data[0];
 
         // Clear existing buttons
         historyContainer.innerHTML = "";

@@ -87,7 +87,6 @@ def index():
             weather_info = getWeatherInfo(session['lat'], session['lon'], key)
 
             # Return weather_info back to the browser
-            print(weather_info)
             return render_template('index.html', weather_info=weather_info)
         else:
             # Return weather_info back to the browser based on session['lat'] and session['lon']
@@ -103,7 +102,6 @@ def locate():
         session['lon'] = data['longitude']
         weather_info = getWeatherInfo(session['lat'], session['lon'], key)
         # Return weather_info back to the browser
-        print(weather_info)
         return jsonify(weather_info)
 
 @app.route('/shortcut', methods=['POST'])
@@ -113,7 +111,6 @@ def shortcut():
     session['lat'] = weather_data['coord']['lat']
     session['lon'] = weather_data['coord']['lon']
     weather_info = weather_data
-    print(weather_info)
     return jsonify(weather_info)
 
 if __name__ == '__main__':

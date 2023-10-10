@@ -13,18 +13,78 @@ const historyContainer = document.querySelector(".history ul");
 
 const unitsElement = document.getElementById("units");
 
-const fashionElements = document.querySelectorAll(".fashion");
+// Get the parent element to append the clothing elements
+const fashionForecast = document.getElementById("fashion-forecast");
 
-// For each video, add eventlistener
-fashionElements.forEach((element) => {
-  const video = element.querySelector("video");
+//Function for fashion selection
+const updateWardrobe = function (feelsLike) {
+  // Get the parent element to append the clothing elements
+  const fashionForecast = document.getElementById("fashion-forecast");
 
-  element.addEventListener("mouseenter", function () {
-    video.currentTime = 0;
-    video.muted = true;
-    video.play();
-  });
-});
+  while (fashionForecast.firstChild) {
+    fashionForecast.removeChild(fashionForecast.firstChild);
+  }
+
+  let wardrobe = [];
+  switch (true) {
+    case feelsLike < 261:
+      wardrobe = wardrobeOne;
+      break;
+    case feelsLike < 272:
+      wardrobe = wardrobeTwo;
+      break;
+    case feelsLike < 278:
+      wardrobe = wardrobeThree;
+      break;
+    case feelsLike < 284:
+      wardrobe = wardrobeFour;
+      break;
+    case feelsLike < 289:
+      wardrobe = wardrobeFive;
+      break;
+    default:
+      wardrobe = wardrobeSix;
+      break;
+  }
+
+  // Loop through wardrobe of videos and append them to the div
+  for (let i = 0; i < wardrobe.length; i++) {
+    // Create a new <div class="fashion"> element
+    const fashionDivElement = document.createElement("div");
+    fashionDivElement.classList.add("fashion");
+
+    // Create video element and set attributes
+    const videoElement = document.createElement("video");
+    videoElement.disablePictureInPicture = true;
+    videoElement.src = `/static/clothingIcons/${wardrobe[i]}`;
+    // Set event listener to the fashion div
+    fashionDivElement.addEventListener("mouseenter", function () {
+      videoElement.currentTime = 0;
+      videoElement.muted = true;
+      videoElement.play();
+    });
+
+    // Append the video element
+    fashionDivElement.appendChild(videoElement);
+
+    // Create fashion-info div
+    const fashionInfoDivElement = document.createElement("div");
+    fashionInfoDivElement.classList.add("fashion-info");
+
+    // Create h4 and p element
+    const h4Element = document.createElement("h4");
+    h4Element.textContent = wardrobe[i];
+
+    const pElement = document.createElement("p");
+    pElement.textContent = wardrobe[i];
+    // Append h4 and p element
+    fashionInfoDivElement.appendChild(h4Element);
+    fashionInfoDivElement.appendChild(pElement);
+
+    fashionDivElement.appendChild(fashionInfoDivElement);
+    fashionForecast.appendChild(fashionDivElement);
+  }
+};
 
 // On click, units should update all values to fahrenheit or celcius using unitConverter():
 unitsElement.addEventListener("click", function () {
@@ -343,6 +403,7 @@ const loadHistory = function (searchData) {
           let sunset = data.sys.sunset;
           updateWeatherIcon(data.weather[0].id, currentTime, sunrise, sunset);
           weatherInfo = data;
+          updateWardrobe(weatherInfo.main.feels_like);
         });
     });
   });
@@ -376,6 +437,7 @@ document.getElementById("getLocation").addEventListener("click", function () {
           let sunset = data.sys.sunset;
           updateWeatherIcon(data.weather[0].id, currentTime, sunrise, sunset);
           weatherInfo = data;
+          updateWardrobe(weatherInfo.main.feels_like);
         });
     });
   } else {
@@ -400,6 +462,8 @@ document.addEventListener("DOMContentLoaded", function () {
   loadHistory(searches);
 
   updateWeatherInfo(weatherInfo);
+
+  updateWardrobe(weatherInfo.main.feels_like);
 });
 
 // Search city name by typing
@@ -434,6 +498,7 @@ form.addEventListener("submit", (event) => {
         let sunset = data[0].sys.sunset;
         updateWeatherIcon(data[0].weather[0].id, currentTime, sunrise, sunset);
         weatherInfo = data[0];
+        updateWardrobe(weatherInfo.main.feels_like);
 
         // Clear existing buttons
         historyContainer.innerHTML = "";
@@ -444,21 +509,55 @@ form.addEventListener("submit", (event) => {
     });
 });
 
-// On load,
+// Make wardrobes for the weather
+const wardrobeOne = [
+  "base-clothing.mp4",
+  "turtleneck.mp4",
+  "cardigan.mp4",
+  "pants.mp4",
+  "jacket.mp4",
+  "protective-wear.mp4",
+  "mittens.mp4",
+  "sneaker.mp4",
+  "hazmat.mp4",
+  "beanie.mp4",
+];
 
-// Make a switch list for temperature in kelvin
-let feelsLike = weatherInfo.main.feels_like;
+const wardrobeTwo = [
+  "base-clothing.mp4",
+  "turtleneck.mp4",
+  "pants.mp4",
+  "protective-wear.mp4",
+  "mittens.mp4",
+  "sneaker.mp4",
+  "scarf.mp4",
+  "beanie.mp4",
+];
 
-if (feelsLike < 261) {
-  // Base-clothing.mp4 as base layer, turtleneck.mp4, cardigan.mp4, pants.mp4 as midlayer. jacket.mp4, protective-wear.mp4, mittens.mp4, sneaker.mp4, hazmat.mp4, beanie.mp4 as Outer layer.
-} else if (feelsLike < 272) {
-  // Base-clothing.mp4 as base layer. turtleneck.mp4, pants.mp4 as midlayer. protective-wear.mp4, mittens.mp4, sneaker.mp4, scarf.mp4, beanie.mp4 as Outer layer.
-} else if (feelsLike < 278) {
-  // Choose clothes. Base layer(T-shirt), midlayer(knitted sweatshirt, pants.) Outer layer(outerjacket, overall, shoes,pectives, handskar)
-} else if (feelsLike < 284) {
-  // Choose clothes. Midlayer(long-sleeved T-shirt, pants.) Outer layer(jacket, shoes, hat)
-} else if (feelsLike < 289) {
-  // Choose clothes. Midlayer(T-shirt, pants.) Outer layer(shoes, hat)
-} else {
-  // Choose clothes. Midlayer(T-shirt, shorts.) Outer layer(sandals, wide-brimmed sunhat)
-}
+const wardrobeThree = [
+  "t-shirt.mp4",
+  "turtleneck.mp4",
+  "pants.mp4",
+  "trench-coat.mp4",
+  "cardigan.mp4",
+  "shoes.mp4",
+  "glove.mp4",
+  "beanie.mp4",
+];
+
+const wardrobeFour = [
+  "long-sleeves.mp4",
+  "pants.mp4",
+  "cardigan.mp4",
+  "shoes.mp4",
+  "cap.mp4",
+];
+
+const wardrobeFive = ["t-shirt.mp4", "pants.mp4", "shoes.mp4", "cap.mp4"];
+
+const wardrobeSix = [
+  "t-shirt.mp4",
+  "short.mp4",
+  "flip-flops.mp4",
+  "sunhat.mp4",
+];

@@ -95,19 +95,19 @@ unitsElement.addEventListener("click", function () {
   }
   // Update content inside temperatureElement, feelsLikeElement, tempMiniElement and tempMaxElement:
   temperatureElement.innerHTML =
-    unitConvert(weatherInfo.main.temp).toFixed(1) +
+    unitConvert(weatherInfo.list[0].main.temp).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
   feelsLikeElement.innerHTML =
-    unitConvert(weatherInfo.main.feels_like).toFixed(1) +
+    unitConvert(weatherInfo.list[0].main.feels_like).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
   tempMinElement.innerHTML =
-    unitConvert(weatherInfo.main.temp_min).toFixed(1) +
+    unitConvert(weatherInfo.list[0].main.temp_min).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
   tempMaxElement.innerHTML =
-    unitConvert(weatherInfo.main.temp_max).toFixed(1) +
+    unitConvert(weatherInfo.list[0].main.temp_max).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
 });
@@ -124,27 +124,27 @@ const unitConvert = function (kelvin) {
 const updateWeatherInfo = function (data) {
   document.getElementById("city-name").innerHTML = data.city.name;
   document.getElementById("description").innerHTML =
-    data.weather[0].description;
+    data.list[0].weather[0].description;
   temperatureElement.innerHTML =
-    unitConvert(data.main.temp).toFixed(1) +
+    unitConvert(data.list[0].main.temp).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
   feelsLikeElement.innerHTML =
-    unitConvert(data.main.feels_like).toFixed(1) +
+    unitConvert(data.list[0].main.feels_like).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
   tempMinElement.innerHTML =
-    unitConvert(data.main.temp_min).toFixed(1) +
+    unitConvert(data.list[0].main.temp_min).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
   tempMaxElement.innerHTML =
-    unitConvert(data.main.temp_max).toFixed(1) +
+    unitConvert(data.list[0].main.temp_max).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
-  document.getElementById("humidity").innerHTML = data.main.humidity;
-  document.getElementById("wind").innerHTML = data.wind.speed;
-  console.log(data.sys.sunrise);
-  console.log(data.sys.sunset);
+  document.getElementById("humidity").innerHTML = data.list[0].main.humidity;
+  document.getElementById("wind").innerHTML = data.list[0].wind.speed;
+  console.log(data.city.sunrise);
+  console.log(data.city.sunset);
 };
 
 // Function to get the time and date
@@ -169,7 +169,6 @@ const updateClock = function (timeZone) {
 
 // Function to determine day or night
 const updateWeatherIcon = function (id, currentTime, sunrise, sunset) {
-  console.log(id);
   // Convert current time to Unix timestamp format
   currentTime = Math.floor(Date.now() / 1000);
   let sunMoon = "";
@@ -398,12 +397,17 @@ const loadHistory = function (searchData) {
         .then((response) => response.json())
         .then((data) => {
           updateWeatherInfo(data);
-          currentTime = updateClock(data.timezone);
-          let sunrise = data.sys.sunrise;
-          let sunset = data.sys.sunset;
-          updateWeatherIcon(data.weather[0].id, currentTime, sunrise, sunset);
+          currentTime = updateClock(data.city.timezone);
+          let sunrise = data.city.sunrise;
+          let sunset = data.city.sunset;
+          updateWeatherIcon(
+            data.list[0].weather[0].id,
+            currentTime,
+            sunrise,
+            sunset
+          );
           weatherInfo = data;
-          updateWardrobe(weatherInfo.main.feels_like);
+          updateWardrobe(weatherInfo.list[0].main.feels_like);
         });
     });
   });
@@ -454,16 +458,22 @@ document.addEventListener("DOMContentLoaded", function () {
   // Setup time
   intervalId = null;
   let currentTime = updateClock(weatherInfo.timezone);
-  let sunrise = weatherInfo.sys.sunrise;
-  let sunset = weatherInfo.sys.sunset;
-  updateWeatherIcon(weatherInfo.weather[0].id, currentTime, sunrise, sunset);
+  let sunrise = weatherInfo.city.sunrise;
+  let sunset = weatherInfo.city.sunset;
+  updateWeatherIcon(
+    weatherInfo.list[0].weather[0].id,
+    currentTime,
+    sunrise,
+    sunset
+  );
 
   // Setup history shortcut buttons
   loadHistory(searches);
 
   updateWeatherInfo(weatherInfo);
 
-  updateWardrobe(weatherInfo.main.feels_like);
+  //TODO: Update algorithm to find average of feels_like, instead of just the current one
+  updateWardrobe(weatherInfo.list[0].main.feels_like);
 });
 
 // Search city name by typing
@@ -493,12 +503,17 @@ form.addEventListener("submit", (event) => {
       } else {
         // else, display the weather info
         updateWeatherInfo(data[0]);
-        currentTime = updateClock(data[0].timezone);
-        let sunrise = data[0].sys.sunrise;
-        let sunset = data[0].sys.sunset;
-        updateWeatherIcon(data[0].weather[0].id, currentTime, sunrise, sunset);
+        currentTime = updateClock(data[0].city.timezone);
+        let sunrise = data[0].city.sunrise;
+        let sunset = data[0].city.sunset;
+        updateWeatherIcon(
+          data[0].list[0].weather[0].id,
+          currentTime,
+          sunrise,
+          sunset
+        );
         weatherInfo = data[0];
-        updateWardrobe(weatherInfo.main.feels_like);
+        updateWardrobe(weatherInfo.list[0].main.feels_like);
 
         // Clear existing buttons
         historyContainer.innerHTML = "";

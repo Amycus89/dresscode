@@ -436,7 +436,7 @@ document.getElementById("getLocation").addEventListener("click", function () {
         .then((response) => response.json())
         .then((data) => {
           updateWeatherInfo(data);
-          currentTime = updateClock(data.timezone);
+          currentTime = updateClock(data.city.timezone);
           let sunrise = data.sys.sunrise;
           let sunset = data.sys.sunset;
           updateWeatherIcon(data.weather[0].id, currentTime, sunrise, sunset);
@@ -457,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Setup time
   intervalId = null;
-  let currentTime = updateClock(weatherInfo.timezone);
+  let currentTime = updateClock(weatherInfo.city.timezone);
   let sunrise = weatherInfo.city.sunrise;
   let sunset = weatherInfo.city.sunset;
   updateWeatherIcon(

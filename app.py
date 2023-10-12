@@ -25,7 +25,6 @@ def getWeatherInfo(lat, lon, key):
     # Request and store the data from it
     weather_request=requests.get(coordinate_api_url)
     weather_info = weather_request.json()
-    print(weather_info)
     return weather_info
 
 
@@ -34,7 +33,6 @@ def getCityWeatherInfo(city_name, key):
     city_api_url = f"https://api.openweathermap.org/data/2.5/forecast?q={city_name}&appid={key}"
     weather_request = requests.get(city_api_url)
     weather_data = weather_request.json()
-    print(weather_data)
     return weather_data
 
 @app.route('/', methods=['GET', 'POST'])

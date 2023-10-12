@@ -122,7 +122,7 @@ const unitConvert = function (kelvin) {
 };
 
 const updateWeatherInfo = function (data) {
-  document.getElementById("city-name").innerHTML = data.name;
+  document.getElementById("city-name").innerHTML = data.city.name;
   document.getElementById("description").innerHTML =
     data.weather[0].description;
   temperatureElement.innerHTML =

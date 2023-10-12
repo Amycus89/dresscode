@@ -148,6 +148,7 @@ section {
   padding: 5px;
   box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
   transition: 0.5s;
+  animation: fade-in 0.5s ease-in-out;
 }
 
 .fashion:hover {
@@ -253,4 +254,15 @@ a {
 
 .social-icons a:nth-child(5) i {
   color: #1ab7ea;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

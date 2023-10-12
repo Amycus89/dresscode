@@ -54,9 +54,9 @@
           <div class="column">
             <div class="iconFrame">
               <img id="weatherIcon" />
-              <p id="description">{{ weather_info.weather[0].description }}</p>
+              <p id="description">{{ weather_info.list[0].weather[0].description }}</p>
             </div>
-            <h2 id="city-name">{{ weather_info.name }}</h2>
+            <h2 id="city-name">{{ weather_info.city.name }}</h2>
           </div>
 
           <div class="flex">
@@ -83,12 +83,12 @@
 
               <div class="info">
                 <p>Humidity:</p>
-                <p id="humidity">{{ weather_info.main.humidity }}%</p>
+                <p id="humidity">{{ weather_info.list[0].main.humidity }}%</p>
               </div>
 
               <div class="info">
                 <p>Wind:</p>
-                <p id="wind">{{ weather_info.wind.speed }}m/s</p>
+                <p id="wind">{{ weather_info.list[0].wind.speed }}m/s</p>
               </div>
 
             </div>
@@ -104,9 +104,9 @@
       </div>
 
       <section class="weatherCard">
-        <p>Sunrise: {{ weather_info.sys.sunrise }}</p>
+        <p>Sunrise: {{ weather_info.sunrise }}</p>
         <div id="clock"></div>
-        <p>Sunset: {{ weather_info.sys.sunset }}</p>
+        <p>Sunset: {{ weather_info.sunset }}</p>
       </section>
 
       <footer class="column">

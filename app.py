@@ -21,18 +21,20 @@ key = os.getenv('key')
 
 def getWeatherInfo(lat, lon, key):
     # Obtain a working url to find weather info based on user's location
-    coordinate_api_url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={key}"
+    coordinate_api_url = f"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={key}"
     # Request and store the data from it
     weather_request=requests.get(coordinate_api_url)
     weather_info = weather_request.json()
+    print(coordinate_api_url)
     return weather_info
 
 
 def getCityWeatherInfo(city_name, key):
     # Obtain a working url to find weather info based on user's input
-    city_api_url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={key}"
+    city_api_url = f"https://api.openweathermap.org/data/2.5/forecast?q={city_name}&appid={key}"
     weather_request = requests.get(city_api_url)
     weather_data = weather_request.json()
+    print(city_api_url)
     return weather_data
 
 @app.route('/', methods=['GET', 'POST'])
@@ -59,8 +61,8 @@ def index():
         while len(session['searches']) > 4:
             session['searches'].pop(0)
 
-        session['lat'] = weather_data['coord']['lat']
-        session['lon'] = weather_data['coord']['lon']
+        session['lat'] = weather_data['city']['coord']['lat']
+        session['lon'] = weather_data['city']['coord']['lon']
         weather_info = weather_data
         searches = session.get('searches', [])
         # Return weather_info back to the browser
@@ -108,8 +110,8 @@ def locate():
 def shortcut():
     city_name = request.form.get('city_name')
     weather_data = getCityWeatherInfo(city_name, key)
-    session['lat'] = weather_data['coord']['lat']
-    session['lon'] = weather_data['coord']['lon']
+    session['lat'] = weather_data['city']['coord']['lat']
+    session['lon'] = weather_data['city']['coord']['lon']
     weather_info = weather_data
     return jsonify(weather_info)
 

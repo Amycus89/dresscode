@@ -247,8 +247,14 @@ const updateWeatherInfo = function (data) {
     temperatureUnit.toUpperCase();
   document.getElementById("humidity").innerHTML = data.list[0].main.humidity;
   document.getElementById("wind").innerHTML = data.list[0].wind.speed;
-  console.log(data.city.sunrise);
-  console.log(data.city.sunset);
+  document.getElementById("sunrise").innerHTML = localTimestamp(
+    data.city.sunrise,
+    data.city.timezone
+  );
+  document.getElementById("sunset").innerHTML = localTimestamp(
+    data.city.sunset,
+    data.city.timezone
+  );
 };
 
 // Function to get the time and date
@@ -269,6 +275,20 @@ const updateClock = function (timeZone) {
     document.getElementById("clock").innerHTML = timestring;
     return localTime;
   }, 1000);
+};
+
+const localTimestamp = function (timestamp, timeZone) {
+  let userTime = new Date(timestamp * 1000); // Get user's local time
+  let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
+  let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
+  let defaultDate = new Date(defaultTime);
+
+  let localTime = new Date(defaultDate.getTime() + timeZone * 1000);
+  let hours = String(localTime.getHours()).padStart(2, "0");
+  let minutes = String(localTime.getMinutes()).padStart(2, "0");
+  let timestring = hours + ":" + minutes;
+  console.log(timestring);
+  return timestring;
 };
 
 // Function to determine day or night
@@ -511,6 +531,7 @@ const loadHistory = function (searchData) {
           );
           weatherInfo = data;
           updateWardrobe(weatherInfo);
+          updateSunriseSunset(weatherInfo);
         });
     });
   });
@@ -540,11 +561,17 @@ document.getElementById("getLocation").addEventListener("click", function () {
         .then((data) => {
           updateWeatherInfo(data);
           currentTime = updateClock(data.city.timezone);
-          let sunrise = data.sys.sunrise;
-          let sunset = data.sys.sunset;
-          updateWeatherIcon(data.weather[0].id, currentTime, sunrise, sunset);
+          let sunrise = data.city.sunrise;
+          let sunset = data.city.sunset;
+          updateWeatherIcon(
+            data.list[0].weather[0].id,
+            currentTime,
+            sunrise,
+            sunset
+          );
           weatherInfo = data;
           updateWardrobe(weatherInfo);
+          updateSunriseSunset(weatherInfo);
         });
     });
   } else {
@@ -577,6 +604,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //TODO: Update algorithm to find average of feels_like, instead of just the current one
   updateWardrobe(weatherInfo);
+  updateSunriseSunset(weatherInfo);
 });
 
 // Search city name by typing
@@ -617,6 +645,8 @@ form.addEventListener("submit", (event) => {
         );
         weatherInfo = data[0];
         updateWardrobe(weatherInfo);
+
+        updateSunriseSunset(weatherInfo);
 
         // Clear existing buttons
         historyContainer.innerHTML = "";

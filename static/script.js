@@ -17,12 +17,113 @@ const unitsElement = document.getElementById("units");
 const fashionForecast = document.getElementById("fashion-forecast");
 
 //Function for fashion selection
-const updateWardrobe = function (feelsLike) {
+const updateWardrobe = function (data) {
   // Get the parent element to append the clothing elements
   const fashionForecast = document.getElementById("fashion-forecast");
 
   while (fashionForecast.firstChild) {
     fashionForecast.removeChild(fashionForecast.firstChild);
+  }
+
+  // Loop through the first 4 feels_like values and calculate the average (4*3=12h)
+  let feelsLike = 0;
+  for (let i = 0; i < 4; i++) {
+    feelsLike += data.list[i].main.feels_like;
+  }
+
+  feelsLike /= 4;
+
+  // Check for rain chance.
+  let rainLikely = false;
+  for (let i = 0; i < 4; i++) {
+    let pop = 0;
+    pop = data.list[i].pop;
+    if (pop > 0.2) {
+      rainLikely = true;
+      break;
+    }
+  }
+
+  let rainWardrobe = [];
+
+  let rainAmount = "";
+
+  if (rainLikely) {
+    // Check if any windspeed for next 12 h is greater than 6.7 m/s
+    let canUseUmbrella = false;
+
+    for (let i = 0; i < 4; i++) {
+      let windSpeed = 0;
+      windSpeed = data.list[i].wind.speed;
+      if (windSpeed < 6.7) {
+        canUseUmbrella = true;
+        break;
+      }
+    }
+    // Check if any rain 3h is greater than 9mm
+    let canUseBoots = false;
+
+    for (let i = 0; i < 4; i++) {
+      // ? means that if data.list[] doesn't exist at all, leave it as undefined
+      if (data.list[i].rain?.["3h"] !== undefined) {
+        if (data.list[i].rain["3h"] > 9) {
+          canUseBoots = true;
+          break;
+        }
+      }
+    }
+
+    // Loop through all weather ids, and append them to an array
+    rainOfDay = [];
+
+    for (let i = 0; i < 4; i++) {
+      let id = data.list[i].weather[0].id;
+      switch (id) {
+        case 201:
+        case 501:
+        case 520:
+        case 522:
+          // Append the word 'medium' to the array
+          rainOfDay.push("medium");
+          break;
+        case 202:
+        case 502:
+        case 503:
+        case 511:
+        case 521:
+        case 531:
+          rainOfDay.push("heavy");
+          break;
+        default:
+          rainOfDay.push("light");
+          break;
+      }
+
+      // Check if the array contains the word "heavy"
+      if (rainOfDay.includes("heavy")) {
+        rainAmount = "heavy";
+      } else if (rainOfDay.includes("medium")) {
+        rainAmount = "medium";
+      } else {
+        rainAmount = "light";
+      }
+    }
+
+    if (rainAmount == "heavy") {
+      rainWardrobe.push("rain-coat.mp4");
+      rainWardrobe.push("puddle.mp4");
+    } else if (rainAmount == "medium") {
+      if (canUseUmbrella) {
+        rainWardrobe.push("umbrella.mp4");
+      } else {
+        rainWardrobe.push("rain-coat.mp4");
+      }
+      if (canUseBoots) {
+        rainWardrobe.push("puddle.mp4");
+      }
+    } else {
+      rainWardrobe.push("umbrella.mp4");
+    }
   }
 
   let wardrobe = [];
@@ -38,12 +139,15 @@ const updateWardrobe = function (feelsLike) {
       break;
     case feelsLike < 284:
       wardrobe = wardrobeFour;
+      wardrobe = rainWardrobe.concat(wardrobe);
       break;
     case feelsLike < 289:
       wardrobe = wardrobeFive;
+      wardrobe = rainWardrobe.concat(wardrobe);
       break;
     default:
       wardrobe = wardrobeSix;
+      wardrobe = rainWardrobe.concat(wardrobe);
       break;
   }
 
@@ -174,7 +278,6 @@ const updateWeatherIcon = function (id, currentTime, sunrise, sunset) {
   let sunMoon = "";
   if (currentTime > sunrise && currentTime < sunset) {
     sunMoon = "sun";
-    console.log(currentTime);
   } else {
     sunMoon = "moon";
   }
@@ -407,7 +510,7 @@ const loadHistory = function (searchData) {
             sunset
           );
           weatherInfo = data;
-          updateWardrobe(weatherInfo.list[0].main.feels_like);
+          updateWardrobe(weatherInfo);
         });
     });
   });
@@ -441,7 +544,7 @@ document.getElementById("getLocation").addEventListener("click", function () {
           let sunset = data.sys.sunset;
           updateWeatherIcon(data.weather[0].id, currentTime, sunrise, sunset);
           weatherInfo = data;
-          updateWardrobe(weatherInfo.main.feels_like);
+          updateWardrobe(weatherInfo);
         });
     });
   } else {
@@ -473,7 +576,7 @@ document.addEventListener("DOMContentLoaded", function () {
   updateWeatherInfo(weatherInfo);
 
   //TODO: Update algorithm to find average of feels_like, instead of just the current one
-  updateWardrobe(weatherInfo.list[0].main.feels_like);
+  updateWardrobe(weatherInfo);
 });
 
 // Search city name by typing
@@ -513,7 +616,7 @@ form.addEventListener("submit", (event) => {
           sunset
         );
         weatherInfo = data[0];
-        updateWardrobe(weatherInfo.list[0].main.feels_like);
+        updateWardrobe(weatherInfo);
 
         // Clear existing buttons
         historyContainer.innerHTML = "";
@@ -526,6 +629,8 @@ form.addEventListener("submit", (event) => {
 
 // Make wardrobes for the weather
 const wardrobeOne = [
+  "beanie.mp4",
+  "hazmat.mp4",
   "base-clothing.mp4",
   "turtleneck.mp4",
   "cardigan.mp4",
@@ -534,45 +639,43 @@ const wardrobeOne = [
   "protective-wear.mp4",
   "mittens.mp4",
   "sneaker.mp4",
-  "hazmat.mp4",
-  "beanie.mp4",
 ];
 
 const wardrobeTwo = [
+  "beanie.mp4",
   "base-clothing.mp4",
   "turtleneck.mp4",
   "pants.mp4",
   "protective-wear.mp4",
+  "scarf.mp4",
   "mittens.mp4",
   "sneaker.mp4",
-  "scarf.mp4",
-  "beanie.mp4",
 ];
 
 const wardrobeThree = [
+  "beanie.mp4",
   "t-shirt.mp4",
   "turtleneck.mp4",
   "pants.mp4",
-  "trench-coat.mp4",
   "cardigan.mp4",
-  "shoes.mp4",
+  "trench-coat.mp4",
   "glove.mp4",
-  "beanie.mp4",
+  "shoes.mp4",
 ];
 
 const wardrobeFour = [
-  "long-sleeves.mp4",
-  "pants.mp4",
-  "cardigan.mp4",
-  "shoes.mp4",
   "cap.mp4",
+  "long-sleeves.mp4",
+  "cardigan.mp4",
+  "pants.mp4",
+  "shoes.mp4",
 ];
 
-const wardrobeFive = ["t-shirt.mp4", "pants.mp4", "shoes.mp4", "cap.mp4"];
+const wardrobeFive = ["cap.mp4", "t-shirt.mp4", "pants.mp4", "shoes.mp4"];
 
 const wardrobeSix = [
+  "sunhat.mp4",
   "t-shirt.mp4",
   "short.mp4",
   "flip-flops.mp4",
-  "sunhat.mp4",
 ];

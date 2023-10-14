@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
@@ -104,15 +106,26 @@
       </div>
 
       <section class="weatherCard">
-        <p id="sunrise"></p>
-        <div id="clock"></div>
-        <p id="sunset"></p>
+        <div class="progress">
+          <div class="barOverflow">
+            <div class="bar"></div>
+          </div>
+          <span>10</span>%
+        </div>
+
+        <div class="text">
+          <p id="sunrise"></p>
+          <div id="clock"></div>
+          <p id="sunset"></p>
+        </div>
+
       </section>
+
 
       <footer class="column">
         <p><strong>Copyright &#169; Daniel Svensson 2023</strong></p>
-        <p><a href="https://www.flaticon.com/free-animated-icons/umbrella" title="umbrella animated icons">Umbrella animated icons created by Freepik - Flaticon</a></p>
-        <p><a href="https://github.com/basmilius/weather-icons">Weather icons by basmilius</a></p>
+        <p><a href="https://www.flaticon.com/free-animated-icons/umbrella" title="Apparell Animated Icons">Umbrella animated icons created by Freepik - Flaticon</a></p>
+        <p><a href="https://github.com/basmilius/weather-icons">Weather Icons by Basmilius</a></p>
       </footer>
     </main>
 

@@ -16,6 +16,37 @@ const unitsElement = document.getElementById("units");
 // Get the parent element to append the clothing elements
 const fashionForecast = document.getElementById("fashion-forecast");
 
+// TODO: Fix bug in calculating percentage left of the day
+const dayLightLeft = function (currentTime, sunrise, sunset) {
+  let timeStamp = new Date(currentTime).getTime() / 1000;
+  let timeDifference = sunset - sunrise;
+  // Calc percentage of day that has already passed
+  let percentage = (timeStamp - sunrise) / timeDifference;
+
+  console.log(percentage);
+
+  $(".progress").each(function () {
+    let $bar = $(this).find(".bar");
+    let $val = $(this).find("span");
+    let perc = parseInt(percentage * 100, 10);
+
+    $({ p: 0 }).animate(
+      { p: perc },
+      {
+        duration: 3000,
+        easing: "swing",
+        step: function (p) {
+          $bar.css({
+            transform: "rotate(" + (45 + p * 1.8) + "deg)", // 100%=180° so: ° = % * 1.8
+            // 45 is to add the needed rotation to have the green borders at the bottom
+          });
+          $val.text(p | 0);
+        },
+      }
+    );
+  });
+};
+
 //Function for fashion selection
 const updateWardrobe = function (data) {
   // Get the parent element to append the clothing elements
@@ -273,7 +304,7 @@ const updateClock = function (timeZone) {
     let seconds = String(localTime.getSeconds()).padStart(2, "0");
     let timestring = hours + ":" + minutes + ":" + seconds;
     document.getElementById("clock").innerHTML = timestring;
-    return localTime;
+    currentTime = localTime;
   }, 1000);
 };
 
@@ -287,7 +318,6 @@ const localTimestamp = function (timestamp, timeZone) {
   let hours = String(localTime.getHours()).padStart(2, "0");
   let minutes = String(localTime.getMinutes()).padStart(2, "0");
   let timestring = hours + ":" + minutes;
-  console.log(timestring);
   return timestring;
 };
 
@@ -520,18 +550,16 @@ const loadHistory = function (searchData) {
         .then((response) => response.json())
         .then((data) => {
           updateWeatherInfo(data);
-          currentTime = updateClock(data.city.timezone);
-          let sunrise = data.city.sunrise;
-          let sunset = data.city.sunset;
+          updateClock(data.city.timezone);
+          dayLightLeft(currentTime, data.city.sunrise, data.city.sunset);
           updateWeatherIcon(
             data.list[0].weather[0].id,
             currentTime,
-            sunrise,
-            sunset
+            data.city.sunrise,
+            data.city.sunset
           );
           weatherInfo = data;
           updateWardrobe(weatherInfo);
-          updateSunriseSunset(weatherInfo);
         });
     });
   });
@@ -560,18 +588,16 @@ document.getElementById("getLocation").addEventListener("click", function () {
         .then((response) => response.json())
         .then((data) => {
           updateWeatherInfo(data);
-          currentTime = updateClock(data.city.timezone);
-          let sunrise = data.city.sunrise;
-          let sunset = data.city.sunset;
+          updateClock(data.city.timezone);
+          dayLightLeft(currentTime, data.city.sunrise, data.city.sunset);
           updateWeatherIcon(
             data.list[0].weather[0].id,
             currentTime,
-            sunrise,
-            sunset
+            data.city.sunrise,
+            data.city.sunset
           );
           weatherInfo = data;
           updateWardrobe(weatherInfo);
-          updateSunriseSunset(weatherInfo);
         });
     });
   } else {
@@ -590,6 +616,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentTime = updateClock(weatherInfo.city.timezone);
   let sunrise = weatherInfo.city.sunrise;
   let sunset = weatherInfo.city.sunset;
+  dayLightLeft(currentTime, sunrise, sunset);
   updateWeatherIcon(
     weatherInfo.list[0].weather[0].id,
     currentTime,
@@ -604,7 +631,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //TODO: Update algorithm to find average of feels_like, instead of just the current one
   updateWardrobe(weatherInfo);
-  updateSunriseSunset(weatherInfo);
 });
 
 // Search city name by typing
@@ -634,19 +660,17 @@ form.addEventListener("submit", (event) => {
       } else {
         // else, display the weather info
         updateWeatherInfo(data[0]);
-        currentTime = updateClock(data[0].city.timezone);
-        let sunrise = data[0].city.sunrise;
-        let sunset = data[0].city.sunset;
+        updateClock(data[0].city.timezone);
+
+        dayLightLeft(currentTime, data[0].city.sunrise, data[0].city.sunset);
         updateWeatherIcon(
           data[0].list[0].weather[0].id,
           currentTime,
-          sunrise,
-          sunset
+          data[0].city.sunrise,
+          data[0].city.sunset
         );
         weatherInfo = data[0];
         updateWardrobe(weatherInfo);
-
-        updateSunriseSunset(weatherInfo);
 
         // Clear existing buttons
         historyContainer.innerHTML = "";

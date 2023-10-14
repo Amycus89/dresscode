@@ -2,6 +2,7 @@
 
 * {
   margin: 0;
+  box-sizing: border-box;
 }
 
 .red::placeholder {
@@ -142,7 +143,7 @@ section {
   align-items: center;
   background-color: #f8fafb;
   width: 70%;
-  min-width: 180px;
+  min-width: 360px;
   margin-top: 5px;
   border-radius: 10px;
   padding: 5px;
@@ -265,4 +266,32 @@ a {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.progress {
+  position: relative;
+  margin: 4px;
+  float: left;
+  text-align: center;
+}
+
+.barOverflow {
+  position: relative;
+  min-width: 360px;
+  height: 180px;
+  margin-bottom: -14px;
+  overflow: hidden;
+}
+
+.bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 10px solid #e7e7e7;
+  border-bottom-color: #f59e0b;
+  border-right-color: #f59e0b;
 }

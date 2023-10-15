@@ -41,7 +41,7 @@ const dayLightLeft = function (currentTime, sunrise, sunset, timeZone) {
   let circumference = 2 * Math.PI * radius;
   progressElement.style.strokeDasharray = circumference;
 
-  let finalOffset = circumference - percentage * circumference;
+  let finalOffset = circumference - (percentage * circumference) / 2;
   let bar = 0;
 
   if (!animationComplete) {

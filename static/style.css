@@ -287,3 +287,9 @@ svg {
   width: 250px;
   height: 250px;
 }
+
+.arch {
+  overflow: hidden;
+  height: 130px;
+  text-align: center;
+}

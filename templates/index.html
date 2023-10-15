@@ -106,17 +106,26 @@
       </div>
 
       <section class="weatherCard">
-
-        <div class="text">
-          <p id="sunrise"></p>
-          <div id="clock"></div>
-          <p id="sunset"></p>
-        </div>
-
+        <div class="arch">
           <svg>
             <circle cx="125" cy="125" r="100" class="track" />
             <circle cx="125" cy="125" r="100" class="progress" />
           </svg>
+        </div>
+
+        <div class="times flex">
+          <div class="column">
+            <img src="/static/weatherIcons/sunrise.svg" alt="sunriseIcon" />
+            <p id="sunrise"></p>
+          </div>
+          <div class="column">
+            <p id="clock"></p>
+          </div>
+          <div class="column">
+            <img src="/static/weatherIcons/sunset.svg" alt="sunsetIcon">
+            <p id="sunset"></p>
+          </div>
+        </div>
 
       </section>
 

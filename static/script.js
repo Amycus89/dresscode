@@ -3,8 +3,6 @@ const feelsLikeElement = document.getElementById("feelsLike");
 const tempMinElement = document.getElementById("temp_min");
 const tempMaxElement = document.getElementById("temp_max");
 
-const sunriseElement = document.getElementById("sunrise");
-const sunsetElement = document.getElementById("sunset");
 const weatherIconElement = document.getElementById("weatherIcon");
 
 const input = document.getElementById("input");
@@ -16,35 +14,52 @@ const unitsElement = document.getElementById("units");
 // Get the parent element to append the clothing elements
 const fashionForecast = document.getElementById("fashion-forecast");
 
-// TODO: Fix bug in calculating percentage left of the day
-const dayLightLeft = function (currentTime, sunrise, sunset) {
-  let timeStamp = new Date(currentTime).getTime() / 1000;
-  let timeDifference = sunset - sunrise;
+let animationComplete = true;
+const dayLightLeft = function (currentTime, sunrise, sunset, timeZone) {
+  let localSunRise = localTimestamp(sunrise, timeZone);
+  let localSunSet = localTimestamp(sunset, timeZone);
+
+  let totalDuration = localSunSet - localSunRise;
+  let elapsedTime = currentTime - localSunRise;
   // Calc percentage of day that has already passed
-  let percentage = (timeStamp - sunrise) / timeDifference;
+  let percentage = elapsedTime / totalDuration;
 
-  console.log(percentage);
+  let oldValue = 0;
+  if (percentage > oldValue) {
+    oldValue = percentage;
+  } else {
+    percentage = oldValue;
+  }
 
-  $(".progress").each(function () {
-    let $bar = $(this).find(".bar");
-    let $val = $(this).find("span");
-    let perc = parseInt(percentage * 100, 10);
+  if (percentage > 1) {
+    percentage = 1;
+  }
 
-    $({ p: 0 }).animate(
-      { p: perc },
-      {
-        duration: 3000,
-        easing: "swing",
-        step: function (p) {
-          $bar.css({
-            transform: "rotate(" + (45 + p * 1.8) + "deg)", // 100%=180° so: ° = % * 1.8
-            // 45 is to add the needed rotation to have the green borders at the bottom
-          });
-          $val.text(p | 0);
-        },
-      }
-    );
-  });
+  let progressElement = document.querySelector(".progress");
+  let radius = progressElement.r.baseVal.value;
+  // Calc circumference
+  let circumference = 2 * Math.PI * radius;
+  progressElement.style.strokeDasharray = circumference;
+
+  let finalOffset = circumference - percentage * circumference;
+  let bar = 0;
+
+  if (!animationComplete) {
+    return;
+  }
+  animationComplete = false;
+
+  const animateProgress = () => {
+    bar += finalOffset / 100;
+    progressElement.style.strokeDashoffset = bar;
+    console.log(bar, finalOffset);
+
+    if (bar <= finalOffset) {
+      requestAnimationFrame(animateProgress);
+    }
+  };
+
+  animateProgress();
 };
 
 //Function for fashion selection
@@ -278,18 +293,16 @@ const updateWeatherInfo = function (data) {
     temperatureUnit.toUpperCase();
   document.getElementById("humidity").innerHTML = data.list[0].main.humidity;
   document.getElementById("wind").innerHTML = data.list[0].wind.speed;
-  document.getElementById("sunrise").innerHTML = localTimestamp(
-    data.city.sunrise,
-    data.city.timezone
+  document.getElementById("sunrise").innerHTML = timeString(
+    localTimestamp(data.city.sunrise, data.city.timezone)
   );
-  document.getElementById("sunset").innerHTML = localTimestamp(
-    data.city.sunset,
-    data.city.timezone
+  document.getElementById("sunset").innerHTML = timeString(
+    localTimestamp(data.city.sunset, data.city.timezone)
   );
 };
 
 // Function to get the time and date
-const updateClock = function (timeZone) {
+const updateClock = function (timeZone, sunrise, sunset) {
   // Clear any previous instance of updateClock() running
   clearInterval(intervalId);
   // Update the clock every second
@@ -298,13 +311,15 @@ const updateClock = function (timeZone) {
     let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
     let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
     let defaultDate = new Date(defaultTime);
-    let localTime = new Date(defaultDate.getTime() + timeZone * 1000);
+    currentTime = defaultDate.getTime() + timeZone * 1000;
+    let localTime = new Date(currentTime);
     let hours = String(localTime.getHours()).padStart(2, "0");
     let minutes = String(localTime.getMinutes()).padStart(2, "0");
     let seconds = String(localTime.getSeconds()).padStart(2, "0");
     let timestring = hours + ":" + minutes + ":" + seconds;
     document.getElementById("clock").innerHTML = timestring;
-    currentTime = localTime;
+
+    dayLightLeft(currentTime, sunrise, sunset, timeZone);
   }, 1000);
 };
 
@@ -314,9 +329,14 @@ const localTimestamp = function (timestamp, timeZone) {
   let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
   let defaultDate = new Date(defaultTime);
 
-  let localTime = new Date(defaultDate.getTime() + timeZone * 1000);
-  let hours = String(localTime.getHours()).padStart(2, "0");
-  let minutes = String(localTime.getMinutes()).padStart(2, "0");
+  let localTime = defaultDate.getTime() + timeZone * 1000;
+  return localTime;
+};
+
+const timeString = function (timestamp) {
+  let time = new Date(timestamp);
+  let hours = String(time.getHours()).padStart(2, "0");
+  let minutes = String(time.getMinutes()).padStart(2, "0");
   let timestring = hours + ":" + minutes;
   return timestring;
 };
@@ -550,8 +570,8 @@ const loadHistory = function (searchData) {
         .then((response) => response.json())
         .then((data) => {
           updateWeatherInfo(data);
-          updateClock(data.city.timezone);
-          dayLightLeft(currentTime, data.city.sunrise, data.city.sunset);
+          animationComplete = true;
+          updateClock(data.city.timezone, data.city.sunrise, data.city.sunset);
           updateWeatherIcon(
             data.list[0].weather[0].id,
             currentTime,
@@ -588,8 +608,8 @@ document.getElementById("getLocation").addEventListener("click", function () {
         .then((response) => response.json())
         .then((data) => {
           updateWeatherInfo(data);
-          updateClock(data.city.timezone);
-          dayLightLeft(currentTime, data.city.sunrise, data.city.sunset);
+          animationComplete = true;
+          updateClock(data.city.timezone, data.city.sunrise, data.city.sunset);
           updateWeatherIcon(
             data.list[0].weather[0].id,
             currentTime,
@@ -613,15 +633,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Setup time
   intervalId = null;
-  let currentTime = updateClock(weatherInfo.city.timezone);
-  let sunrise = weatherInfo.city.sunrise;
-  let sunset = weatherInfo.city.sunset;
-  dayLightLeft(currentTime, sunrise, sunset);
+  let currentTime;
+  animationComplete = true;
+  updateClock(
+    weatherInfo.city.timezone,
+    weatherInfo.city.sunrise,
+    weatherInfo.city.sunset
+  );
   updateWeatherIcon(
     weatherInfo.list[0].weather[0].id,
     currentTime,
-    sunrise,
-    sunset
+    weatherInfo.city.sunrise,
+    weatherInfo.city.sunset
   );
 
   // Setup history shortcut buttons
@@ -660,9 +683,13 @@ form.addEventListener("submit", (event) => {
       } else {
         // else, display the weather info
         updateWeatherInfo(data[0]);
-        updateClock(data[0].city.timezone);
+        animationComplete = true;
+        updateClock(
+          data[0].city.timezone,
+          data[0].city.sunrise,
+          data[0].city.sunset
+        );
 
-        dayLightLeft(currentTime, data[0].city.sunrise, data[0].city.sunset);
         updateWeatherIcon(
           data[0].list[0].weather[0].id,
           currentTime,

@@ -268,30 +268,22 @@ a {
   }
 }
 
+.track {
+  stroke: #e7e7e7;
+  stroke-width: 5px;
+  fill: none;
+}
+
 .progress {
-  position: relative;
-  margin: 4px;
-  float: left;
-  text-align: center;
+  stroke: #f59e0b;
+  stroke-width: 5px;
+  fill: none;
+
+  transform: rotate(-180deg);
+  transform-origin: center;
 }
 
-.barOverflow {
-  position: relative;
-  min-width: 360px;
-  height: 180px;
-  margin-bottom: -14px;
-  overflow: hidden;
-}
-
-.bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  box-sizing: border-box;
-  border: 10px solid #e7e7e7;
-  border-bottom-color: #f59e0b;
-  border-right-color: #f59e0b;
+svg {
+  width: 250px;
+  height: 250px;
 }

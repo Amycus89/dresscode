@@ -40,6 +40,10 @@ const dayLightLeft = function (currentTime, sunrise, sunset, timeZone) {
   // Calc circumference
   let circumference = 2 * Math.PI * radius;
   progressElement.style.strokeDasharray = circumference;
+  console.log(percentage);
+
+  // inverse percentage
+  percentage = 1 - percentage;
 
   let finalOffset = circumference - (percentage * circumference) / 2;
   let bar = 0;
@@ -52,7 +56,6 @@ const dayLightLeft = function (currentTime, sunrise, sunset, timeZone) {
   const animateProgress = () => {
     bar += finalOffset / 100;
     progressElement.style.strokeDashoffset = bar;
-    console.log(bar, finalOffset);
 
     if (bar <= finalOffset) {
       requestAnimationFrame(animateProgress);

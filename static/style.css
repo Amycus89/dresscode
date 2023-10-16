@@ -54,6 +54,10 @@ h1 {
   line-height: 64px;
 }
 
+h2 {
+  text-align: center;
+}
+
 .form {
   background-color: white;
   display: flex;
@@ -269,14 +273,14 @@ a {
 }
 
 .track {
-  stroke: #e7e7e7;
-  stroke-width: 5px;
+  stroke: #f59e0b;
+  stroke-width: 10px;
   fill: none;
 }
 
 .progress {
-  stroke: #f59e0b;
-  stroke-width: 5px;
+  stroke: #e7e7e7;
+  stroke-width: 11px;
   fill: none;
 
   transform: rotate(-180deg);
@@ -284,12 +288,14 @@ a {
 }
 
 svg {
-  width: 250px;
-  height: 250px;
+  width: 500px;
+  height: 500px;
+  viewbox: 0 0 500 500;
+  transform: scaleX(-1);
 }
 
 .arch {
   overflow: hidden;
-  height: 130px;
+  height: 250px;
   text-align: center;
 }

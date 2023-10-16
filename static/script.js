@@ -14,13 +14,18 @@ const unitsElement = document.getElementById("units");
 // Get the parent element to append the clothing elements
 const fashionForecast = document.getElementById("fashion-forecast");
 
-let animationComplete = true;
-const dayLightLeft = function (currentTime, sunrise, sunset, timeZone) {
+const dayLightLeft = function (sunrise, sunset, timeZone) {
   let localSunRise = localTimestamp(sunrise, timeZone);
   let localSunSet = localTimestamp(sunset, timeZone);
-
+  // Find current local time
+  let userTime = new Date(); // Get user's local time
+  let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
+  let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
+  let defaultDate = new Date(defaultTime);
+  let localTime = defaultDate.getTime() + timeZone * 1000;
+  // Calculate percentage
   let totalDuration = localSunSet - localSunRise;
-  let elapsedTime = currentTime - localSunRise;
+  let elapsedTime = localTime - localSunRise;
   // Calc percentage of day that has already passed
   let percentage = elapsedTime / totalDuration;
 
@@ -40,7 +45,6 @@ const dayLightLeft = function (currentTime, sunrise, sunset, timeZone) {
   // Calc circumference
   let circumference = 2 * Math.PI * radius;
   progressElement.style.strokeDasharray = circumference;
-  console.log(percentage);
 
   // inverse percentage
   percentage = 1 - percentage;
@@ -48,14 +52,10 @@ const dayLightLeft = function (currentTime, sunrise, sunset, timeZone) {
   let finalOffset = circumference - (percentage * circumference) / 2;
   let bar = 0;
 
-  if (!animationComplete) {
-    return;
-  }
-  animationComplete = false;
-
   const animateProgress = () => {
     bar += finalOffset / 100;
     progressElement.style.strokeDashoffset = bar;
+    console.log(bar, finalOffset);
 
     if (bar <= finalOffset) {
       requestAnimationFrame(animateProgress);
@@ -305,7 +305,7 @@ const updateWeatherInfo = function (data) {
 };
 
 // Function to get the time and date
-const updateClock = function (timeZone, sunrise, sunset) {
+const updateClock = function (timeZone) {
   // Clear any previous instance of updateClock() running
   clearInterval(intervalId);
   // Update the clock every second
@@ -322,7 +322,7 @@ const updateClock = function (timeZone, sunrise, sunset) {
     let timestring = hours + ":" + minutes + ":" + seconds;
     document.getElementById("clock").innerHTML = timestring;
 
-    dayLightLeft(currentTime, sunrise, sunset, timeZone);
+    /*dayLightLeft(sunrise, sunset, timeZone);*/
   }, 1000);
 };
 
@@ -573,8 +573,8 @@ const loadHistory = function (searchData) {
         .then((response) => response.json())
         .then((data) => {
           updateWeatherInfo(data);
-          animationComplete = true;
-          updateClock(data.city.timezone, data.city.sunrise, data.city.sunset);
+          updateClock(data.city.timezone);
+          dayLightLeft(data.city.sunrise, data.city.sunset, data.city.timezone);
           updateWeatherIcon(
             data.list[0].weather[0].id,
             currentTime,
@@ -611,8 +611,8 @@ document.getElementById("getLocation").addEventListener("click", function () {
         .then((response) => response.json())
         .then((data) => {
           updateWeatherInfo(data);
-          animationComplete = true;
-          updateClock(data.city.timezone, data.city.sunrise, data.city.sunset);
+          updateClock(data.city.timezone);
+          dayLightLeft(data.city.sunrise, data.city.sunset, data.city.timezone);
           updateWeatherIcon(
             data.list[0].weather[0].id,
             currentTime,
@@ -637,11 +637,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // Setup time
   intervalId = null;
   let currentTime;
-  animationComplete = true;
-  updateClock(
-    weatherInfo.city.timezone,
+  updateClock(weatherInfo.city.timezone);
+  dayLightLeft(
     weatherInfo.city.sunrise,
-    weatherInfo.city.sunset
+    weatherInfo.city.sunset,
+    weatherInfo.city.timezone
   );
   updateWeatherIcon(
     weatherInfo.list[0].weather[0].id,
@@ -686,11 +686,12 @@ form.addEventListener("submit", (event) => {
       } else {
         // else, display the weather info
         updateWeatherInfo(data[0]);
-        animationComplete = true;
-        updateClock(
-          data[0].city.timezone,
+        updateClock(data[0].city.timezone);
+
+        dayLightLeft(
           data[0].city.sunrise,
-          data[0].city.sunset
+          data[0].city.sunset,
+          data[0].city.timezone
         );
 
         updateWeatherIcon(

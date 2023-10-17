@@ -2,6 +2,15 @@ const temperatureElement = document.getElementById("temperature");
 const feelsLikeElement = document.getElementById("feelsLike");
 const tempMinElement = document.getElementById("temp_min");
 const tempMaxElement = document.getElementById("temp_max");
+const cityNameElement = document.getElementById("city-name");
+const descriptionElement = document.getElementById("description");
+const humidityElement = document.getElementById("humidity");
+const windElement = document.getElementById("wind");
+const sunriseElement = document.getElementById("sunrise");
+const sunsetElement = document.getElementById("sunset");
+const countryElement = document.getElementById("country");
+const weekdayElement = document.getElementById("weekday");
+const dateElement = document.getElementById("date");
 
 const weatherIconElement = document.getElementById("weatherIcon");
 
@@ -13,6 +22,13 @@ const unitsElement = document.getElementById("units");
 
 // Get the parent element to append the clothing elements
 const fashionForecast = document.getElementById("fashion-forecast");
+
+// Initialize counter variable to keep track of how many hours are left of the day, to use with the countHours() function
+let counter;
+
+const capitalizeFirstLetter = function (string) {
+  return string[0].toUpperCase() + string.slice(1);
+};
 
 const dayLightLeft = function (sunrise, sunset, timeZone) {
   let localSunRise = localTimestamp(sunrise, timeZone);
@@ -55,7 +71,6 @@ const dayLightLeft = function (sunrise, sunset, timeZone) {
   const animateProgress = () => {
     bar += finalOffset / 100;
     progressElement.style.strokeDashoffset = bar;
-    console.log(bar, finalOffset);
 
     if (bar <= finalOffset) {
       requestAnimationFrame(animateProgress);
@@ -74,17 +89,22 @@ const updateWardrobe = function (data) {
     fashionForecast.removeChild(fashionForecast.firstChild);
   }
 
+  // Update global variable "counter"
+  counter = countHours(data.list);
+  console.log(counter);
+
   // Loop through the first 4 feels_like values and calculate the average (4*3=12h)
+  // Change 4 to counter, that is, the hours left before midnight.
   let feelsLike = 0;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < counter; i++) {
     feelsLike += data.list[i].main.feels_like;
   }
 
-  feelsLike /= 4;
+  feelsLike /= counter;
 
   // Check for rain chance.
   let rainLikely = false;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < counter; i++) {
     let pop = 0;
     pop = data.list[i].pop;
     if (pop > 0.2) {
@@ -101,7 +121,7 @@ const updateWardrobe = function (data) {
     // Check if any windspeed for next 12 h is greater than 6.7 m/s
     let canUseUmbrella = false;
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < counter; i++) {
       let windSpeed = 0;
       windSpeed = data.list[i].wind.speed;
       if (windSpeed < 6.7) {
@@ -239,6 +259,31 @@ const updateWardrobe = function (data) {
   }
 };
 
+// Function to count hours left until midnight... times 3, due to how the api call works.
+// This is so that the numbers that the clothing choices are based on are based on when the user is likely to be active
+const countHours = function (list) {
+  // Set global variable "counter" to 0
+  counter = 0;
+  let previousHour = null;
+
+  for (let i = 0; i < list.length; i++) {
+    // Target only the part of the string which lists the hours
+    let currentHour = parseInt(list[i].dt_txt.substring(11, 13));
+
+    if (previousHour < currentHour) {
+      counter++;
+    } else {
+      break; // Stop counting and break the loop to return the counter
+    }
+    previousHour = currentHour;
+  }
+  // Min value should be 1
+  if (counter < 1) {
+    counter = 1;
+  }
+  return counter;
+};
+
 // On click, units should update all values to fahrenheit or celcius using unitConverter():
 unitsElement.addEventListener("click", function () {
   if (temperatureUnit === "c") {
@@ -275,33 +320,44 @@ const unitConvert = function (kelvin) {
 };
 
 const updateWeatherInfo = function (data) {
-  document.getElementById("city-name").innerHTML = data.city.name;
-  document.getElementById("description").innerHTML =
-    data.list[0].weather[0].description;
+  cityNameElement.innerHTML = data.city.name;
+
+  descriptionElement.innerHTML = capitalizeFirstLetter(
+    data.list[0].weather[0].description
+  );
+
   temperatureElement.innerHTML =
     unitConvert(data.list[0].main.temp).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
+
   feelsLikeElement.innerHTML =
     unitConvert(data.list[0].main.feels_like).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
+
   tempMinElement.innerHTML =
     unitConvert(data.list[0].main.temp_min).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
+
   tempMaxElement.innerHTML =
     unitConvert(data.list[0].main.temp_max).toFixed(1) +
     "&deg;" +
     temperatureUnit.toUpperCase();
-  document.getElementById("humidity").innerHTML = data.list[0].main.humidity;
-  document.getElementById("wind").innerHTML = data.list[0].wind.speed;
-  document.getElementById("sunrise").innerHTML = timeString(
+
+  humidityElement.innerHTML = data.list[0].main.humidity;
+
+  windElement.innerHTML = data.list[0].wind.speed;
+
+  sunriseElement.innerHTML = timeString(
     localTimestamp(data.city.sunrise, data.city.timezone)
   );
-  document.getElementById("sunset").innerHTML = timeString(
+  sunsetElement.innerHTML = timeString(
     localTimestamp(data.city.sunset, data.city.timezone)
   );
+
+  countryElement.innerHTML = data.city.country;
 };
 
 // Function to get the time and date
@@ -314,7 +370,7 @@ const updateClock = function (timeZone) {
     let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
     let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
     let defaultDate = new Date(defaultTime);
-    currentTime = defaultDate.getTime() + timeZone * 1000;
+    let currentTime = defaultDate.getTime() + timeZone * 1000;
     let localTime = new Date(currentTime);
     let hours = String(localTime.getHours()).padStart(2, "0");
     let minutes = String(localTime.getMinutes()).padStart(2, "0");
@@ -322,8 +378,44 @@ const updateClock = function (timeZone) {
     let timestring = hours + ":" + minutes + ":" + seconds;
     document.getElementById("clock").innerHTML = timestring;
 
-    /*dayLightLeft(sunrise, sunset, timeZone);*/
+    updateDate(localTime);
   }, 1000);
+};
+
+// WIP
+const updateDate = function (date) {
+  let weekdays = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  let months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  let weekday = weekdays[date.getDay()];
+  let dayOfMonth = date.getDate();
+  let year = date.getFullYear();
+
+  weekdayElement.innerHTML = weekday;
+
+  dateElement.innerHTML =
+    months[date.getMonth()] + " " + dayOfMonth + "<br>" + year;
 };
 
 const localTimestamp = function (timestamp, timeZone) {
@@ -345,11 +437,19 @@ const timeString = function (timestamp) {
 };
 
 // Function to determine day or night
-const updateWeatherIcon = function (id, currentTime, sunrise, sunset) {
-  // Convert current time to Unix timestamp format
-  currentTime = Math.floor(Date.now() / 1000);
+const updateWeatherIcon = function (id, timeZone, sunrise, sunset) {
+  // Find current local time
+  let userTime = new Date(); // Get user's local time
+  let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
+  let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
+  let defaultDate = new Date(defaultTime);
+  let localTime = defaultDate.getTime() + timeZone * 1000;
+  let localSunrise = localTimestamp(sunrise, timeZone);
+  let localSunset = localTimestamp(sunset, timeZone);
+
   let sunMoon = "";
-  if (currentTime > sunrise && currentTime < sunset) {
+
+  if (localTime > localSunrise && localTime < localSunset) {
     sunMoon = "sun";
   } else {
     sunMoon = "moon";
@@ -577,7 +677,7 @@ const loadHistory = function (searchData) {
           dayLightLeft(data.city.sunrise, data.city.sunset, data.city.timezone);
           updateWeatherIcon(
             data.list[0].weather[0].id,
-            currentTime,
+            data.city.timezone,
             data.city.sunrise,
             data.city.sunset
           );
@@ -615,7 +715,7 @@ document.getElementById("getLocation").addEventListener("click", function () {
           dayLightLeft(data.city.sunrise, data.city.sunset, data.city.timezone);
           updateWeatherIcon(
             data.list[0].weather[0].id,
-            currentTime,
+            data.city.timezone,
             data.city.sunrise,
             data.city.sunset
           );
@@ -636,7 +736,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Setup time
   intervalId = null;
-  let currentTime;
   updateClock(weatherInfo.city.timezone);
   dayLightLeft(
     weatherInfo.city.sunrise,
@@ -645,7 +744,7 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   updateWeatherIcon(
     weatherInfo.list[0].weather[0].id,
-    currentTime,
+    weatherInfo.city.timezone,
     weatherInfo.city.sunrise,
     weatherInfo.city.sunset
   );
@@ -696,7 +795,7 @@ form.addEventListener("submit", (event) => {
 
         updateWeatherIcon(
           data[0].list[0].weather[0].id,
-          currentTime,
+          data[0].city.timezone,
           data[0].city.sunrise,
           data[0].city.sunset
         );

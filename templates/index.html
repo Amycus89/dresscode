@@ -106,24 +106,29 @@
       </div>
 
       <section class="weatherCard">
-        <div class="arch">
-          <svg viewBox="0 0 500 500">
-            <circle cx="250" cy="250" r="200" class="track" />
-            <circle cx="250" cy="250" r="200" class="progress" />
+        <div class="arch flex">
+          <svg viewBox="0 0 400 400">
+            <circle cx="200" cy="200" r="160" class="track" />
+            <circle cx="200" cy="200" r="160" class="progress" />
           </svg>
         </div>
 
         <div class="times flex">
           <div class="column">
-            <img src="/static/weatherIcons/sunrise.svg" alt="sunriseIcon" />
+            <img src="/static/weatherIcons/sunrise.svg" alt="sunrise icon" id="riseIcon" />
             <p>Sunrise</p>
             <p id="sunrise"></p>
           </div>
           <div class="column">
             <p id="clock"></p>
+
+            <hr>
+            <p id="weekday"></p>
+            <p id="date"></p>
+            <p id ="country"></p>
           </div>
           <div class="column">
-            <img src="/static/weatherIcons/sunset.svg" alt="sunsetIcon">
+            <img src="/static/weatherIcons/sunset.svg" alt="sunset icon" id="setIcon" />
             <p>Sunset</p>
             <p id="sunset"></p>
           </div>

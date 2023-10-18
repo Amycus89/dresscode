@@ -45,72 +45,72 @@
     </header>
 
     <main>
-      <div class="flex">
-        <section class="flex weatherCard">
-          <div class="history">
-            <ul>
-              <!-- Search history buttons will be generated dynamically through javascript instead of jinja -->
-            </ul>
-          </div>
 
+      <div class="sections">
+        <section class="flex weatherCard one">
+        <div class="history">
+          <ul>
+            <!-- Search history buttons will be generated dynamically through javascript instead of jinja -->
+          </ul>
+        </div>
+
+        <div class="column">
+          <div class="iconFrame">
+            <img id="weatherIcon" />
+            <p id="description">{{ weather_info.list[0].weather[0].description }}</p>
+          </div>
+        </div>
+
+        <div class="flex">
           <div class="column">
-            <div class="iconFrame">
-              <img id="weatherIcon" />
-              <p id="description">{{ weather_info.list[0].weather[0].description }}</p>
-            </div>
             <h2 id="city-name">{{ weather_info.city.name }}</h2>
-          </div>
-
-          <div class="flex">
-            <div class="column">
-              <div class="info">
-                <p>Temperature:</p>
-                <p id="temperature"></p>
-              </div>
-
-              <div class="info">
-                <p>Feels like:</p>
-                <p id="feelsLike"></p>
-              </div>
-
-              <div class="info">
-                <p>Min temp:</p>
-                <p id="temp_min"></p>
-              </div>
-
-              <div class="info">
-                <p>Max temp:</p>
-                <p id="temp_max"></p>
-              </div>
-
-              <div class="info">
-                <p>Humidity:</p>
-                <p id="humidity">{{ weather_info.list[0].main.humidity }}%</p>
-              </div>
-
-              <div class="info">
-                <p>Wind:</p>
-                <p id="wind">{{ weather_info.list[0].wind.speed }}m/s</p>
-              </div>
-
-              <div class="info">
-                <p>Rain:</p>
-                <p id="rain"></p>
-              </div>
-
+            <div class="info">
+              <p>Temperature:</p>
+              <p id="temperature"></p>
             </div>
-          </div>
-        </section>
 
-        <section class="weatherCard">
-          <h2>Fashion forecast</h2>
-          <div class="column" id="fashion-forecast">
-            <!-- Fashion forecast -->
-          </div>
-        </section>
-      </div>
+            <div class="info">
+              <p>Feels like:</p>
+              <p id="feelsLike"></p>
+            </div>
 
-      <section class="weatherCard">
+            <div class="info">
+              <p>Min temp:</p>
+              <p id="temp_min"></p>
+            </div>
+
+            <div class="info">
+              <p>Max temp:</p>
+              <p id="temp_max"></p>
+            </div>
+
+            <div class="info">
+              <p>Humidity:</p>
+              <p id="humidity">{{ weather_info.list[0].main.humidity }}%</p>
+            </div>
+
+            <div class="info">
+              <p>Wind:</p>
+              <p id="wind">{{ weather_info.list[0].wind.speed }}m/s</p>
+            </div>
+
+            <div class="info">
+              <p>Rain:</p>
+              <p id="rain"></p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <section class="weatherCard two">
+        <h2>Fashion forecast</h2>
+        <div class="column" id="fashion-forecast">
+          <!-- Fashion forecast -->
+        </div>
+      </section>
+
+      <section class="weatherCard three">
         <div class="time-container">
 
           <div class="gnight">
@@ -148,6 +148,7 @@
         </div>
 
       </section>
+      </div>
 
 
       <footer class="column">

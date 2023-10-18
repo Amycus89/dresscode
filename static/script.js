@@ -1,8 +1,4 @@
-// TODO: Show rain chance
-// TODO: Change rain logic to give umbrella if surprise rain
-// TODO: Adjust CSS for date elements
 // TODO: Restyle overall CSS sections
-// TODO: Make progress bar change when sun goes down, using suncalc logic.
 
 const temperatureElement = document.getElementById("temperature");
 const feelsLikeElement = document.getElementById("feelsLike");
@@ -40,7 +36,6 @@ let counter;
 let rainChance = 0;
 
 const maxRainChance = function (list) {
-  // WIP Check for rain chance.
   let topPop = 0;
   for (let i = 0; i < counter; i++) {
     let pop = 0;
@@ -51,7 +46,7 @@ const maxRainChance = function (list) {
   }
   // Save the highest recorded pop as percentage value
   rainChance = topPop * 100;
-  rainElement.innerHTML = rainChance + "%";
+  rainElement.innerHTML = rainChance + " %";
 };
 
 const capitalizeFirstLetter = function (string) {
@@ -776,7 +771,13 @@ document.getElementById("getLocation").addEventListener("click", function () {
         });
     });
   } else {
-    input.innerHTML = "Geolocation is not supported by this browser.";
+    input.placeholder = "Geolocation is not supported by this browser.";
+    input.classList.add("red");
+
+    setTimeout(function () {
+      input.placeholder = "Enter a location...";
+      input.classList.remove("red");
+    }, 2000);
   }
 });
 

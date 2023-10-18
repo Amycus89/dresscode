@@ -94,16 +94,41 @@ button img {
   height: 16px;
 }
 
-main {
+.sections {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   min-height: calc(100vh - 64px);
+  flex-wrap: wrap;
+  height: calc(100vh - 64px);
+  width: 100vw;
+  gap: 5%;
 }
 
 section {
   position: relative;
+}
+
+.one {
+  order: 1;
+  width: 50%;
+  min-width: 400px;
+  height: 38vh;
+}
+
+.two {
+  order: 3;
+  width: 40%;
+  min-width: 400px;
+  height: 70vh;
+}
+
+.three {
+  order: 2;
+  width: 50%;
+  min-width: 400px;
+  height: 38vh;
 }
 
 .history {
@@ -123,7 +148,6 @@ section {
   justify-content: space-around;
   align-items: flex-start;
   flex-wrap: wrap;
-  width: 100%;
 }
 
 .column {
@@ -139,8 +163,6 @@ section {
 
 .weatherCard {
   background-color: white;
-  width: 45%;
-  min-width: 400px;
   border-radius: 10px;
   margin: 0 15px;
   padding: 15px;
@@ -232,6 +254,8 @@ footer {
   height: 5rem;
   color: white;
   text-align: center;
+  position: fixed;
+  bottom: 0;
 }
 
 a {
@@ -313,6 +337,7 @@ svg {
   position: relative;
   width: 370px;
   margin: 0 auto;
+  text-align: center;
 }
 
 .gnight {
@@ -323,11 +348,30 @@ svg {
 }
 
 @media screen and (max-width: 600px) {
+  .sections {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    flex-wrap: nowrap;
+    width: 400;
+    gap: 0;
+  }
+
   h1 {
     font-size: 18px;
   }
 
   .social-icons {
     display: none;
+  }
+
+  .two {
+    order: 2;
+  }
+
+  .three {
+    order: 3;
   }
 }

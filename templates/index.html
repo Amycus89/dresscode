@@ -106,31 +106,39 @@
       </div>
 
       <section class="weatherCard">
-        <div class="arch flex">
-          <svg viewBox="0 0 400 400">
-            <circle cx="200" cy="200" r="160" class="track" />
-            <circle cx="200" cy="200" r="160" class="progress" />
-          </svg>
-        </div>
+        <div class="time-container">
 
-        <div class="times flex">
-          <div class="column">
-            <img src="/static/weatherIcons/sunrise.svg" alt="sunrise icon" id="riseIcon" />
-            <p>Sunrise</p>
-            <p id="sunrise"></p>
+          <div class="gnight">
+            <img src="/static/weatherIcons/starry-night.svg" alt="night icon">
+            <p>Lights out</p>
           </div>
-          <div class="column">
-            <p id="clock"></p>
 
-            <hr>
-            <p id="weekday"></p>
-            <p id="date"></p>
-            <p id ="country"></p>
+          <div class="arch flex">
+            <svg viewBox="0 0 400 400">
+              <circle cx="200" cy="200" r="160" class="track" />
+              <circle cx="200" cy="200" r="160" class="progress" />
+            </svg>
           </div>
-          <div class="column">
-            <img src="/static/weatherIcons/sunset.svg" alt="sunset icon" id="setIcon" />
-            <p>Sunset</p>
-            <p id="sunset"></p>
+
+          <div class="times flex">
+            <div class="column">
+              <img src="/static/weatherIcons/sunrise.svg" alt="sunrise icon" id="riseIcon" />
+              <p>Sunrise</p>
+              <p id="sunrise"></p>
+            </div>
+
+            <div class="column">
+              <p id="clock"></p>
+              <p id="weekday"></p>
+              <p id="date"></p>
+              <p id ="country"></p>
+            </div>
+
+            <div class="column">
+              <img src="/static/weatherIcons/sunset.svg" alt="sunset icon" id="setIcon" />
+              <p>Sunset</p>
+              <p id="sunset"></p>
+            </div>
           </div>
         </div>
 

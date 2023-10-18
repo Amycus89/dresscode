@@ -1,3 +1,9 @@
+// TODO: Show rain chance
+// TODO: Change rain logic to give umbrella if surprise rain
+// TODO: Adjust CSS for date elements
+// TODO: Restyle overall CSS sections
+// TODO: Make progress bar change when sun goes down, using suncalc logic.
+
 const temperatureElement = document.getElementById("temperature");
 const feelsLikeElement = document.getElementById("feelsLike");
 const tempMinElement = document.getElementById("temp_min");
@@ -17,6 +23,10 @@ const weatherIconElement = document.getElementById("weatherIcon");
 const input = document.getElementById("input");
 const form = document.getElementById("search-form");
 const historyContainer = document.querySelector(".history ul");
+
+const progressElement = document.querySelector(".progress");
+const trackElement = document.querySelector(".track");
+const goodNightElement = document.querySelector(".gnight");
 
 const unitsElement = document.getElementById("units");
 
@@ -44,6 +54,9 @@ const dayLightLeft = function (sunrise, sunset, timeZone) {
   let elapsedTime = localTime - localSunRise;
   // Calc percentage of day that has already passed
   let percentage = elapsedTime / totalDuration;
+  // Set default color of trackElement to #f59e0b for daylight hours and hide gnight element
+  trackElement.style.stroke = "#f59e0b";
+  goodNightElement.style.display = "none";
 
   let oldValue = 0;
   if (percentage > oldValue) {
@@ -54,9 +67,11 @@ const dayLightLeft = function (sunrise, sunset, timeZone) {
 
   if (percentage > 1) {
     percentage = 1;
+    // Day is over, change color of trackElement to #72b9d5 amd display the gnight element
+    trackElement.style.stroke = "#72b9d5";
+    goodNightElement.style.display = "block";
   }
 
-  let progressElement = document.querySelector(".progress");
   let radius = progressElement.r.baseVal.value;
   // Calc circumference
   let circumference = 2 * Math.PI * radius;
@@ -179,19 +194,43 @@ const updateWardrobe = function (data) {
     }
 
     if (rainAmount == "heavy") {
-      rainWardrobe.push("rain-coat.mp4");
-      rainWardrobe.push("puddle.mp4");
+      rainWardrobe.push({
+        name: "Rain-coat",
+        mp4: "rain-coat.mp4",
+        description: "When the umbrella isn't enough",
+      });
+      rainWardrobe.push({
+        name: "Rubber boots",
+        mp4: "puddle.mp4",
+        description: "Ready to jump in some puddles?",
+      });
     } else if (rainAmount == "medium") {
       if (canUseUmbrella) {
-        rainWardrobe.push("umbrella.mp4");
+        rainWardrobe.push({
+          name: "Umbrella",
+          mp4: "umbrella.mp4",
+          description: "Your trusty old umbrella",
+        });
       } else {
-        rainWardrobe.push("rain-coat.mp4");
+        rainWardrobe.push({
+          name: "Rain-coat",
+          mp4: "rain-coat.mp4",
+          description: "When the umbrella isn't enough",
+        });
       }
       if (canUseBoots) {
-        rainWardrobe.push("puddle.mp4");
+        rainWardrobe.push({
+          name: "Rubber boots",
+          mp4: "puddle.mp4",
+          description: "Ready to jump in some puddles?",
+        });
       }
     } else {
-      rainWardrobe.push("umbrella.mp4");
+      rainWardrobe.push({
+        name: "Umbrella",
+        mp4: "umbrella.mp4",
+        description: "Your trusty old umbrella",
+      });
     }
   }
 
@@ -229,7 +268,7 @@ const updateWardrobe = function (data) {
     // Create video element and set attributes
     const videoElement = document.createElement("video");
     videoElement.disablePictureInPicture = true;
-    videoElement.src = `/static/clothingIcons/${wardrobe[i]}`;
+    videoElement.src = `/static/clothingIcons/${wardrobe[i].mp4}`;
     // Set event listener to the fashion div
     fashionDivElement.addEventListener("mouseenter", function () {
       videoElement.currentTime = 0;
@@ -246,10 +285,10 @@ const updateWardrobe = function (data) {
 
     // Create h4 and p element
     const h4Element = document.createElement("h4");
-    h4Element.textContent = wardrobe[i];
+    h4Element.textContent = wardrobe[i].name;
 
     const pElement = document.createElement("p");
-    pElement.textContent = wardrobe[i];
+    pElement.textContent = wardrobe[i].description;
     // Append h4 and p element
     fashionInfoDivElement.appendChild(h4Element);
     fashionInfoDivElement.appendChild(pElement);
@@ -382,7 +421,7 @@ const updateClock = function (timeZone) {
   }, 1000);
 };
 
-// WIP
+// Function to get date info
 const updateDate = function (date) {
   let weekdays = [
     "Sunday",
@@ -813,53 +852,178 @@ form.addEventListener("submit", (event) => {
 
 // Make wardrobes for the weather
 const wardrobeOne = [
-  "beanie.mp4",
-  "hazmat.mp4",
-  "base-clothing.mp4",
-  "turtleneck.mp4",
-  "cardigan.mp4",
-  "pants.mp4",
-  "jacket.mp4",
-  "protective-wear.mp4",
-  "mittens.mp4",
-  "sneaker.mp4",
+  { name: "Beanie", mp4: "beanie.mp4", description: "Keeps your ears warm" },
+  {
+    name: "Balaclava",
+    mp4: "hazmat.mp4",
+    description: "Definitely a balaclava icon, absolutely not a hazmat mask",
+  },
+  {
+    name: "Underclothes",
+    mp4: "base-clothing.mp4",
+    description: "A base layer of long underwear is certain to help",
+  },
+  {
+    name: "Sweater",
+    mp4: "turtleneck.mp4",
+    description: "Oh, is that real wool?",
+  },
+  {
+    name: "Cardigan",
+    mp4: "cardigan.mp4",
+    description: "Easy to add and remove, as the day demands",
+  },
+  {
+    name: "Pants",
+    mp4: "pants.mp4",
+    description: "Please just put them on before you are arrested",
+  },
+  { name: "Jacket", mp4: "jacket.mp4", description: "A jacket. Yes." },
+  {
+    name: "Jumpsuit",
+    mp4: "protective-wear.mp4",
+    description: "Time for the heavy artillery",
+  },
+  {
+    name: "Mittens",
+    mp4: "mittens.mp4",
+    description: "Make sure they have a cute pattern",
+  },
+  {
+    name: "Winter Boots",
+    mp4: "sneaker.mp4",
+    description: "Don't forget your feet!",
+  },
 ];
 
 const wardrobeTwo = [
-  "beanie.mp4",
-  "base-clothing.mp4",
-  "turtleneck.mp4",
-  "pants.mp4",
-  "protective-wear.mp4",
-  "scarf.mp4",
-  "mittens.mp4",
-  "sneaker.mp4",
+  { name: "Beanie", mp4: "beanie.mp4", description: "Keeps your ears warm" },
+  {
+    name: "Underclothes",
+    mp4: "base-clothing.mp4",
+    description: "A base layer of long underwear is certain to help",
+  },
+  {
+    name: "Sweater",
+    mp4: "turtleneck.mp4",
+    description: "Oh, is that real wool?",
+  },
+  {
+    name: "Pants",
+    mp4: "pants.mp4",
+    description: "Please just put them on before you are arrested",
+  },
+  {
+    name: "Jumpsuit",
+    mp4: "protective-wear.mp4",
+    description: "Time for the heavy artillery",
+  },
+  { name: "Scarf", mp4: "scarf.mp4", description: "Try not to lose it" },
+  {
+    name: "Mittens",
+    mp4: "mittens.mp4",
+    description: "Make sure they have a cute pattern",
+  },
+  {
+    name: "Winter Boots",
+    mp4: "sneaker.mp4",
+    description: "Don't forget your feet!",
+  },
 ];
 
 const wardrobeThree = [
-  "beanie.mp4",
-  "t-shirt.mp4",
-  "turtleneck.mp4",
-  "pants.mp4",
-  "cardigan.mp4",
-  "trench-coat.mp4",
-  "glove.mp4",
-  "shoes.mp4",
+  { name: "Beanie", mp4: "beanie.mp4", description: "Keeps your ears warm" },
+  {
+    name: "T-shirt",
+    mp4: "t-shirt.mp4",
+    description: "Just grab one from the stack",
+  },
+  {
+    name: "Sweater",
+    mp4: "turtleneck.mp4",
+    description: "Oh, is that real wool?",
+  },
+  {
+    name: "Pants",
+    mp4: "pants.mp4",
+    description: "Please just put them on before you are arrested",
+  },
+  {
+    name: "Cardigan",
+    mp4: "cardigan.mp4",
+    description: "Easy to add and remove, as the day demands",
+  },
+  {
+    name: "Trench-coat",
+    mp4: "trench-coat.mp4",
+    description: "Please wear something underneath too",
+  },
+  { name: "Gloves", mp4: "glove.mp4", description: "Like a true gentleman" },
+  {
+    name: "Shoes",
+    mp4: "shoes.mp4",
+    description: "Never leave the home without them",
+  },
 ];
 
 const wardrobeFour = [
-  "cap.mp4",
-  "long-sleeves.mp4",
-  "cardigan.mp4",
-  "pants.mp4",
-  "shoes.mp4",
+  { name: "Cap", mp4: "cap.mp4", description: "Gotta catch 'em all" },
+  {
+    name: "T-shirt with long sleeves",
+    mp4: "long-sleeves.mp4",
+    description: "Why is it that one seems to never have enough of these?",
+  },
+  {
+    name: "Cardigan",
+    mp4: "cardigan.mp4",
+    description: "Easy to add and remove, as the day demands",
+  },
+  {
+    name: "Pants",
+    mp4: "pants.mp4",
+    description: "Please just put them on before you are arrested",
+  },
+  {
+    name: "Shoes",
+    mp4: "shoes.mp4",
+    description: "Never leave the home without them",
+  },
 ];
 
-const wardrobeFive = ["cap.mp4", "t-shirt.mp4", "pants.mp4", "shoes.mp4"];
+const wardrobeFive = [
+  { name: "Cap", mp4: "cap.mp4", description: "Gotta catch 'em all" },
+  {
+    name: "T-shirt",
+    mp4: "t-shirt.mp4",
+    description: "Just grab one from the stack",
+  },
+  {
+    name: "Pants",
+    mp4: "pants.mp4",
+    description: "Please just put them on before you are arrested",
+  },
+  {
+    name: "Shoes",
+    mp4: "shoes.mp4",
+    description: "Never leave the home without them",
+  },
+];
 
 const wardrobeSix = [
-  "sunhat.mp4",
-  "t-shirt.mp4",
-  "short.mp4",
-  "flip-flops.mp4",
+  { name: "Sunhat", mp4: "sunhat.mp4", description: "Watch the sun!" },
+  {
+    name: "T-shirt",
+    mp4: "t-shirt.mp4",
+    description: "Just grab one from the stack",
+  },
+  {
+    name: "Shorts",
+    mp4: "short.mp4",
+    description: "Time to show off those hairy legs of yours",
+  },
+  {
+    name: "Flip Flops",
+    mp4: "flip-flops.mp4",
+    description: "...People actually wear these things?",
+  },
 ];

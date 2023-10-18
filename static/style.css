@@ -309,6 +309,19 @@ svg {
   font-size: 50px;
 }
 
+.time-container {
+  position: relative;
+  width: 370px;
+  margin: 0 auto;
+}
+
+.gnight {
+  display: none;
+  position: absolute;
+  top: 60px;
+  left: calc(50% - 30px);
+}
+
 @media screen and (max-width: 600px) {
   h1 {
     font-size: 18px;

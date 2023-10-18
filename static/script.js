@@ -12,6 +12,7 @@ const cityNameElement = document.getElementById("city-name");
 const descriptionElement = document.getElementById("description");
 const humidityElement = document.getElementById("humidity");
 const windElement = document.getElementById("wind");
+const rainElement = document.getElementById("rain");
 const sunriseElement = document.getElementById("sunrise");
 const sunsetElement = document.getElementById("sunset");
 const countryElement = document.getElementById("country");
@@ -35,6 +36,23 @@ const fashionForecast = document.getElementById("fashion-forecast");
 
 // Initialize counter variable to keep track of how many hours are left of the day, to use with the countHours() function
 let counter;
+// Initialize global variable for rain chance
+let rainChance = 0;
+
+const maxRainChance = function (list) {
+  // WIP Check for rain chance.
+  let topPop = 0;
+  for (let i = 0; i < counter; i++) {
+    let pop = 0;
+    pop = list[i].pop;
+    if (topPop < pop) {
+      topPop = pop;
+    }
+  }
+  // Save the highest recorded pop as percentage value
+  rainChance = topPop * 100;
+  rainElement.innerHTML = rainChance + "%";
+};
 
 const capitalizeFirstLetter = function (string) {
   return string[0].toUpperCase() + string.slice(1);
@@ -104,12 +122,8 @@ const updateWardrobe = function (data) {
     fashionForecast.removeChild(fashionForecast.firstChild);
   }
 
-  // Update global variable "counter"
-  counter = countHours(data.list);
-  console.log(counter);
-
   // Loop through the first 4 feels_like values and calculate the average (4*3=12h)
-  // Change 4 to counter, that is, the hours left before midnight.
+  // Change 4 to the counter variable, that is, the hours left before midnight. More accurate than simply stating 4 for all
   let feelsLike = 0;
   for (let i = 0; i < counter; i++) {
     feelsLike += data.list[i].main.feels_like;
@@ -117,15 +131,11 @@ const updateWardrobe = function (data) {
 
   feelsLike /= counter;
 
-  // Check for rain chance.
+  // WIP
+
   let rainLikely = false;
-  for (let i = 0; i < counter; i++) {
-    let pop = 0;
-    pop = data.list[i].pop;
-    if (pop > 0.2) {
-      rainLikely = true;
-      break;
-    }
+  if (rainChance > 30) {
+    rainLikely = true;
   }
 
   let rainWardrobe = [];
@@ -711,7 +721,10 @@ const loadHistory = function (searchData) {
       })
         .then((response) => response.json())
         .then((data) => {
+          // Update global variable "counter"
+          counter = countHours(data.list);
           updateWeatherInfo(data);
+          maxRainChance(data.list);
           updateClock(data.city.timezone);
           dayLightLeft(data.city.sunrise, data.city.sunset, data.city.timezone);
           updateWeatherIcon(
@@ -720,8 +733,8 @@ const loadHistory = function (searchData) {
             data.city.sunrise,
             data.city.sunset
           );
+          updateWardrobe(data);
           weatherInfo = data;
-          updateWardrobe(weatherInfo);
         });
     });
   });
@@ -749,7 +762,9 @@ document.getElementById("getLocation").addEventListener("click", function () {
       })
         .then((response) => response.json())
         .then((data) => {
+          counter = countHours(data.list);
           updateWeatherInfo(data);
+          maxRainChance(data.list);
           updateClock(data.city.timezone);
           dayLightLeft(data.city.sunrise, data.city.sunset, data.city.timezone);
           updateWeatherIcon(
@@ -775,6 +790,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Setup time
   intervalId = null;
+  counter = countHours(weatherInfo.list);
   updateClock(weatherInfo.city.timezone);
   dayLightLeft(
     weatherInfo.city.sunrise,
@@ -787,6 +803,8 @@ document.addEventListener("DOMContentLoaded", function () {
     weatherInfo.city.sunrise,
     weatherInfo.city.sunset
   );
+
+  maxRainChance(weatherInfo.list);
 
   // Setup history shortcut buttons
   loadHistory(searches);
@@ -823,7 +841,9 @@ form.addEventListener("submit", (event) => {
         }, 2000);
       } else {
         // else, display the weather info
+        counter = countHours(data.list);
         updateWeatherInfo(data[0]);
+        maxRainChance(data[0].list);
         updateClock(data[0].city.timezone);
 
         dayLightLeft(

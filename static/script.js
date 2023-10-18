@@ -131,8 +131,6 @@ const updateWardrobe = function (data) {
 
   feelsLike /= counter;
 
-  // WIP
-
   let rainLikely = false;
   if (rainChance > 30) {
     rainLikely = true;
@@ -841,7 +839,7 @@ form.addEventListener("submit", (event) => {
         }, 2000);
       } else {
         // else, display the weather info
-        counter = countHours(data.list);
+        counter = countHours(data[0].list);
         updateWeatherInfo(data[0]);
         maxRainChance(data[0].list);
         updateClock(data[0].city.timezone);

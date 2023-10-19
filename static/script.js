@@ -45,7 +45,7 @@ const maxRainChance = function (list) {
     }
   }
   // Save the highest recorded pop as percentage value
-  rainChance = topPop * 100;
+  rainChance = Math.round(topPop * 100);
   rainElement.innerHTML = rainChance + " %";
 };
 

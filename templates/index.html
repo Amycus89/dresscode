@@ -1,171 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- jQuery -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-    <link rel="stylesheet" href="/static/style.css" />
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <title>DressCode</title>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <div class="banner">
-          <h1>DressCode</h1>
+{% extends "layout.html" %} {% block title %} Log In {% endblock %} {% block
+main %}
+<div class="sections">
+  <section class="flex weatherCard one">
+    <div class="history">
+      <ul>
+        <!-- Search history buttons will be generated dynamically through javascript instead of jinja -->
+      </ul>
+    </div>
 
-          <form action="/" method="post" class="form" id="search-form">
-            <input
-              id="input"
-              type="search"
-              placeholder="Enter a location..."
-              name="city_name"
-            />
-            <img id="getLocation" src="/static/crosshair.svg" class="icon" />
-            <button id="search" type="submit">
-              <img src="/static/search.svg" />
-            </button>
-          </form>
-
-          <img src="/static/units.svg" alt="Switch between Celcius and Fahrenheit" id="units"></img>
-
-          <div class="social-icons">
-            <a href="https://github.com"><i class="fa fa-github"></i></a>
-            <a href="https://twitter.com"><i class="fa fa-twitter"></i></a>
-            <a href="https://linkedin.com"><i class="fa fa-linkedin"></i></a>
-            <a href="https://facebook.com"><i class="fa fa-facebook"></i></a>
-            <a href="https://codepen.io"><i class="fa fa-codepen"></i></a>
-          </div>
-        </div>
-      </nav>
-    </header>
-
-    <main>
-
-      <div class="sections">
-        <section class="flex weatherCard one">
-        <div class="history">
-          <ul>
-            <!-- Search history buttons will be generated dynamically through javascript instead of jinja -->
-          </ul>
-        </div>
-
-        <div class="column">
-          <div class="iconFrame">
-            <img id="weatherIcon" />
-            <p id="description">{{ weather_info.list[0].weather[0].description }}</p>
-          </div>
-        </div>
-
-
-        <div class="column">
-          <h2 id="city-name">{{ weather_info.city.name }}</h2>
-
-          <div class="temps">
-
-            <p id="temperature"></p>
-            <div class="column max">
-              <p id="temp_max"></p>
-              <p>Max</p>
-            </div>
-
-            <div class="column min">
-              <p id="temp_min"></p>
-              <p>Min</p>
-            </div>
-          </div>
-
-          <div class="info">
-            <p>Feels Like:</p>
-            <p id="feelsLike"></p>
-          </div>
-
-          <div class="facts">
-            <div class="fact">
-              <img src="/static/weatherIcons/humidity.svg" alt="humidity">
-              <p id="humidity">{{ weather_info.list[0].main.humidity }}%</p>
-            </div>
-
-            <div class="fact">
-              <img src="/static/weatherIcons/windsock.svg" alt="wind">
-              <p id="wind">{{ weather_info.list[0].wind.speed }}m/s</p>
-            </div>
-
-            <div class="fact">
-              <img src="/static/weatherIcons/umbrella.svg" alt="Likelyhood of rain">
-              <p id="rain"></p>
-            </div>
-          </div>
-
-        </div>
-
-      </section>
-
-      <section class="weatherCard two">
-        <h2>Fashion forecast</h2>
-        <div class="column" id="fashion-forecast">
-          <!-- Fashion forecast -->
-        </div>
-      </section>
-
-      <section class="weatherCard three">
-        <div class="time-container">
-
-          <div class="gnight">
-            <img src="/static/weatherIcons/starry-night.svg" alt="night icon">
-            <p>Lights out</p>
-          </div>
-
-          <div class="arch flex">
-            <svg viewBox="0 0 400 400">
-              <circle cx="200" cy="200" r="160" class="track" />
-              <circle cx="200" cy="200" r="160" class="progress" />
-            </svg>
-          </div>
-
-          <div class="times flex">
-            <div class="column">
-              <img src="/static/weatherIcons/sunrise.svg" alt="sunrise icon" id="riseIcon" />
-              <p>Sunrise</p>
-              <p id="sunrise"></p>
-            </div>
-
-            <div class="column">
-              <p id="clock"></p>
-              <p id="weekday"></p>
-              <p id="date"></p>
-              <p id ="country"></p>
-            </div>
-
-            <div class="column">
-              <img src="/static/weatherIcons/sunset.svg" alt="sunset icon" id="setIcon" />
-              <p>Sunset</p>
-              <p id="sunset"></p>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <footer class="column">
-        <p><strong>Copyright &#169; Daniel Svensson 2023</strong></p>
-        <p><a href="https://www.flaticon.com/free-animated-icons/umbrella" title="Apparell Animated Icons">Umbrella animated icons created by Freepik - Flaticon</a></p>
-        <p><a href="https://github.com/basmilius/weather-icons">Weather Icons by Basmilius</a></p>
-      </footer>
+    <div class="column">
+      <div class="iconFrame">
+        <img id="weatherIcon" />
+        <p id="description">
+          {{ weather_info.list[0].weather[0].description }}
+        </p>
       </div>
-    </main>
+    </div>
 
-    <script>
-      let weatherInfo = {{ weather_info|safe }};
-      let searches = {{ searches|tojson }};
-      let apology = "{{ apology if apology else '' }}";
-    </script>
+    <div class="column">
+      <h2 id="city-name">{{ weather_info.city.name }}</h2>
 
-    <script src="/static/script.js"></script>
-  </body>
-</html>
+      <div class="temps">
+        <p id="temperature"></p>
+        <div class="column max">
+          <p id="temp_max"></p>
+          <p>Max</p>
+        </div>
+
+        <div class="column min">
+          <p id="temp_min"></p>
+          <p>Min</p>
+        </div>
+      </div>
+
+      <div class="info">
+        <p>Feels Like:</p>
+        <p id="feelsLike"></p>
+      </div>
+
+      <div class="facts">
+        <div class="fact">
+          <img src="/static/weatherIcons/humidity.svg" alt="humidity" />
+          <p id="humidity">{{ weather_info.list[0].main.humidity }}%</p>
+        </div>
+
+        <div class="fact">
+          <img src="/static/weatherIcons/windsock.svg" alt="wind" />
+          <p id="wind">{{ weather_info.list[0].wind.speed }}m/s</p>
+        </div>
+
+        <div class="fact">
+          <img
+            src="/static/weatherIcons/umbrella.svg"
+            alt="Likelyhood of rain"
+          />
+          <p id="rain"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="weatherCard two">
+    <h2>Fashion forecast</h2>
+    <div class="column" id="fashion-forecast">
+      <!-- Fashion forecast -->
+    </div>
+  </section>
+
+  <section class="weatherCard three">
+    <div class="time-container">
+      <div class="gnight">
+        <img src="/static/weatherIcons/starry-night.svg" alt="night icon" />
+        <p>Lights out</p>
+      </div>
+
+      <div class="arch flex">
+        <svg viewBox="0 0 400 400">
+          <circle cx="200" cy="200" r="160" class="track" />
+          <circle cx="200" cy="200" r="160" class="progress" />
+        </svg>
+      </div>
+
+      <div class="times flex">
+        <div class="column">
+          <img
+            src="/static/weatherIcons/sunrise.svg"
+            alt="sunrise icon"
+            id="riseIcon"
+          />
+          <p>Sunrise</p>
+          <p id="sunrise"></p>
+        </div>
+
+        <div class="column">
+          <p id="clock"></p>
+          <p id="weekday"></p>
+          <p id="date"></p>
+          <p id="country"></p>
+        </div>
+
+        <div class="column">
+          <img
+            src="/static/weatherIcons/sunset.svg"
+            alt="sunset icon"
+            id="setIcon"
+          />
+          <p>Sunset</p>
+          <p id="sunset"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="column">
+    <p><strong>Copyright &#169; Daniel Svensson 2023</strong></p>
+    <p>
+      <a
+        href="https://www.flaticon.com/free-animated-icons/umbrella"
+        title="Apparell Animated Icons"
+        >Umbrella animated icons created by Freepik - Flaticon</a
+      >
+    </p>
+    <p>
+      <a href="https://github.com/basmilius/weather-icons"
+        >Weather Icons by Basmilius</a
+      >
+    </p>
+  </footer>
+</div>
+{% endblock %}

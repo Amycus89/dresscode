@@ -60,6 +60,8 @@ h1 {
 
 h2 {
   text-align: center;
+  font-size: 42px;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
 }
 
 .form {
@@ -147,7 +149,7 @@ section {
 .flex {
   display: flex;
   justify-content: space-around;
-  align-items: flex-start;
+  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -291,6 +293,52 @@ a {
   color: #1ab7ea;
 }
 
+.temps {
+  position: relative;
+  margin-top: 20px;
+}
+
+#temperature {
+  font-size: 84px;
+  font-weight: bold;
+}
+
+.max {
+  position: absolute;
+  top: -25px;
+  right: 0;
+  text-align: center;
+}
+
+.min {
+  position: absolute;
+  bottom: -25px;
+  right: 0;
+  text-align: center;
+}
+
+.facts {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 400px;
+  margin-top: 30px;
+}
+
+.fact {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  white-space: nowrap;
+}
+
+.fact p {
+  border-radius: 12px;
+  padding: 5px;
+  background-color: #e7e7e7;
+}
+
 @keyframes fade-in {
   0% {
     opacity: 0;
@@ -344,7 +392,21 @@ svg {
   display: none;
   position: absolute;
   top: 60px;
-  left: calc(50% - 30px);
+  left: calc(50% - 35px);
+  font-family: "Dancing Script", cursive;
+}
+
+#weekday {
+  font-size: 24px;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+}
+
+#country {
+  color: gray;
+}
+
+#description {
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 @media screen and (max-width: 600px) {
@@ -365,6 +427,10 @@ svg {
 
   .social-icons {
     display: none;
+  }
+
+  .one {
+    height: auto;
   }
 
   .two {

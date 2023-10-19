@@ -62,46 +62,48 @@
           </div>
         </div>
 
-        <div class="flex">
-          <div class="column">
-            <h2 id="city-name">{{ weather_info.city.name }}</h2>
-            <div class="info">
-              <p>Temperature:</p>
-              <p id="temperature"></p>
-            </div>
 
-            <div class="info">
-              <p>Feels like:</p>
-              <p id="feelsLike"></p>
-            </div>
+        <div class="column">
+          <h2 id="city-name">{{ weather_info.city.name }}</h2>
 
-            <div class="info">
-              <p>Min temp:</p>
-              <p id="temp_min"></p>
-            </div>
+          <div class="temps">
 
-            <div class="info">
-              <p>Max temp:</p>
+            <p id="temperature"></p>
+            <div class="column max">
               <p id="temp_max"></p>
+              <p>Max</p>
             </div>
 
-            <div class="info">
-              <p>Humidity:</p>
+            <div class="column min">
+              <p id="temp_min"></p>
+              <p>Min</p>
+            </div>
+          </div>
+
+          <div class="info">
+            <p>Feels Like:</p>
+            <p id="feelsLike"></p>
+          </div>
+
+          <div class="facts">
+            <div class="fact">
+              <img src="/static/weatherIcons/humidity.svg" alt="humidity">
               <p id="humidity">{{ weather_info.list[0].main.humidity }}%</p>
             </div>
 
-            <div class="info">
-              <p>Wind:</p>
+            <div class="fact">
+              <img src="/static/weatherIcons/windsock.svg" alt="wind">
               <p id="wind">{{ weather_info.list[0].wind.speed }}m/s</p>
             </div>
 
-            <div class="info">
-              <p>Rain:</p>
+            <div class="fact">
+              <img src="/static/weatherIcons/umbrella.svg" alt="Likelyhood of rain">
               <p id="rain"></p>
             </div>
-
           </div>
+
         </div>
+
       </section>
 
       <section class="weatherCard two">

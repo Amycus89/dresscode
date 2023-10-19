@@ -388,9 +388,9 @@ const updateWeatherInfo = function (data) {
     "&deg;" +
     temperatureUnit.toUpperCase();
 
-  humidityElement.innerHTML = data.list[0].main.humidity;
+  humidityElement.innerHTML = data.list[0].main.humidity + " %";
 
-  windElement.innerHTML = data.list[0].wind.speed;
+  windElement.innerHTML = data.list[0].wind.speed.toFixed(1) + " m/s";
 
   sunriseElement.innerHTML = timeString(
     localTimestamp(data.city.sunrise, data.city.timezone)

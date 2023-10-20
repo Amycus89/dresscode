@@ -83,11 +83,9 @@ def index():
             session['lon'] = location_data['lon']
 
             weather_info = getWeatherInfo(session['lat'], session['lon'], key)
-            # Make sure 'searches' does not return Undefined
-            searches = []
 
             # Return weather_info back to the browser
-            return render_template('index.html', weather_info=weather_info)
+            return render_template('index.html', weather_info=weather_info, searches=session.get('searches', []))
         else:
             # Return weather_info back to the browser based on session['lat'] and session['lon']
             weather_info = getWeatherInfo(session['lat'], session['lon'], key)

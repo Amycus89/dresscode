@@ -1,5 +1,3 @@
-// TODO: Restyle overall CSS sections
-
 const temperatureElement = document.getElementById("temperature");
 const feelsLikeElement = document.getElementById("feelsLike");
 const tempMinElement = document.getElementById("temp_min");
@@ -35,6 +33,72 @@ let counter;
 // Initialize global variable for rain chance
 let rainChance = 0;
 
+// Function to count hours left until midnight... times 3, due to how the api call works.
+// This is so that the numbers that the clothing choices are based on are based on when the user is likely to be active
+const countHours = function (list) {
+  // Set global variable "counter" to 0
+  counter = 0;
+  let previousHour = null;
+
+  for (let i = 0; i < list.length; i++) {
+    // Target only the part of the string which lists the hours
+    let currentHour = parseInt(list[i].dt_txt.substring(11, 13));
+
+    if (previousHour < currentHour) {
+      counter++;
+    } else {
+      break; // Stop counting and break the loop to return the counter
+    }
+    previousHour = currentHour;
+  }
+  // Min value should be 1
+  if (counter < 1) {
+    counter = 1;
+  }
+  return counter;
+};
+
+const updateWeatherInfo = function (data) {
+  cityNameElement.innerHTML = data.city.name;
+
+  descriptionElement.innerHTML = capitalizeFirstLetter(
+    data.list[0].weather[0].description
+  );
+
+  temperatureElement.innerHTML =
+    unitConvert(data.list[0].main.temp).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+
+  feelsLikeElement.innerHTML =
+    unitConvert(data.list[0].main.feels_like).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+
+  tempMinElement.innerHTML =
+    unitConvert(data.list[0].main.temp_min).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+
+  tempMaxElement.innerHTML =
+    unitConvert(data.list[0].main.temp_max).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+
+  humidityElement.innerHTML = data.list[0].main.humidity + " %";
+
+  windElement.innerHTML = data.list[0].wind.speed.toFixed(1) + " m/s";
+
+  sunriseElement.innerHTML = timeString(
+    localTimestamp(data.city.sunrise, data.city.timezone)
+  );
+  sunsetElement.innerHTML = timeString(
+    localTimestamp(data.city.sunset, data.city.timezone)
+  );
+
+  countryElement.innerHTML = data.city.country;
+};
+
 const maxRainChance = function (list) {
   let topPop = 0;
   for (let i = 0; i < counter; i++) {
@@ -49,10 +113,29 @@ const maxRainChance = function (list) {
   rainElement.innerHTML = rainChance + " %";
 };
 
-const capitalizeFirstLetter = function (string) {
-  return string[0].toUpperCase() + string.slice(1);
+// Function to get the time and date
+const updateClock = function (timeZone) {
+  // Clear any previous instance of updateClock() running
+  clearInterval(intervalId);
+  // Update the clock every second
+  intervalId = setInterval(() => {
+    let userTime = new Date(); // Get user's local time
+    let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
+    let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
+    let defaultDate = new Date(defaultTime);
+    let currentTime = defaultDate.getTime() + timeZone * 1000;
+    let localTime = new Date(currentTime);
+    let hours = String(localTime.getHours()).padStart(2, "0");
+    let minutes = String(localTime.getMinutes()).padStart(2, "0");
+    let seconds = String(localTime.getSeconds()).padStart(2, "0");
+    let timestring = hours + ":" + minutes + ":" + seconds;
+    document.getElementById("clock").innerHTML = timestring;
+
+    updateDate(localTime);
+  }, 1000);
 };
 
+// Sets the progress bar
 const dayLightLeft = function (sunrise, sunset, timeZone) {
   let localSunRise = localTimestamp(sunrise, timeZone);
   let localSunSet = localTimestamp(sunset, timeZone);
@@ -108,377 +191,7 @@ const dayLightLeft = function (sunrise, sunset, timeZone) {
   animateProgress();
 };
 
-//Function for fashion selection
-const updateWardrobe = function (data) {
-  // Get the parent element to append the clothing elements
-  const fashionForecast = document.getElementById("fashion-forecast");
-
-  while (fashionForecast.firstChild) {
-    fashionForecast.removeChild(fashionForecast.firstChild);
-  }
-
-  // Loop through the first 4 feels_like values and calculate the average (4*3=12h)
-  // Change 4 to the counter variable, that is, the hours left before midnight. More accurate than simply stating 4 for all
-  let feelsLike = 0;
-  for (let i = 0; i < counter; i++) {
-    feelsLike += data.list[i].main.feels_like;
-  }
-
-  feelsLike /= counter;
-
-  let rainLikely = false;
-  if (rainChance > 30) {
-    rainLikely = true;
-  }
-
-  let rainWardrobe = [];
-
-  let rainAmount = "";
-
-  if (rainLikely) {
-    // Check if any windspeed for next 12 h is greater than 6.7 m/s
-    let canUseUmbrella = false;
-
-    for (let i = 0; i < counter; i++) {
-      let windSpeed = 0;
-      windSpeed = data.list[i].wind.speed;
-      if (windSpeed < 6.7) {
-        canUseUmbrella = true;
-        break;
-      }
-    }
-    // Check if any rain 3h is greater than 9mm
-    let canUseBoots = false;
-
-    for (let i = 0; i < 4; i++) {
-      // ? means that if data.list[] doesn't exist at all, leave it as undefined
-      if (data.list[i].rain?.["3h"] !== undefined) {
-        if (data.list[i].rain["3h"] > 9) {
-          canUseBoots = true;
-          break;
-        }
-      }
-    }
-
-    // Loop through all weather ids, and append them to an array
-    rainOfDay = [];
-
-    for (let i = 0; i < 4; i++) {
-      let id = data.list[i].weather[0].id;
-      switch (id) {
-        case 201:
-        case 501:
-        case 520:
-        case 522:
-          // Append the word 'medium' to the array
-          rainOfDay.push("medium");
-          break;
-        case 202:
-        case 502:
-        case 503:
-        case 511:
-        case 521:
-        case 531:
-          rainOfDay.push("heavy");
-          break;
-        default:
-          rainOfDay.push("light");
-          break;
-      }
-
-      // Check if the array contains the word "heavy"
-      if (rainOfDay.includes("heavy")) {
-        rainAmount = "heavy";
-      } else if (rainOfDay.includes("medium")) {
-        rainAmount = "medium";
-      } else {
-        rainAmount = "light";
-      }
-    }
-
-    if (rainAmount == "heavy") {
-      rainWardrobe.push({
-        name: "Rain-coat",
-        mp4: "rain-coat.mp4",
-        description: "When the umbrella isn't enough",
-      });
-      rainWardrobe.push({
-        name: "Rubber boots",
-        mp4: "puddle.mp4",
-        description: "Ready to jump in some puddles?",
-      });
-    } else if (rainAmount == "medium") {
-      if (canUseUmbrella) {
-        rainWardrobe.push({
-          name: "Umbrella",
-          mp4: "umbrella.mp4",
-          description: "Your trusty old umbrella",
-        });
-      } else {
-        rainWardrobe.push({
-          name: "Rain-coat",
-          mp4: "rain-coat.mp4",
-          description: "When the umbrella isn't enough",
-        });
-      }
-      if (canUseBoots) {
-        rainWardrobe.push({
-          name: "Rubber boots",
-          mp4: "puddle.mp4",
-          description: "Ready to jump in some puddles?",
-        });
-      }
-    } else {
-      rainWardrobe.push({
-        name: "Umbrella",
-        mp4: "umbrella.mp4",
-        description: "Your trusty old umbrella",
-      });
-    }
-  }
-
-  let wardrobe = [];
-  switch (true) {
-    case feelsLike < 261:
-      wardrobe = wardrobeOne;
-      break;
-    case feelsLike < 272:
-      wardrobe = wardrobeTwo;
-      break;
-    case feelsLike < 278:
-      wardrobe = wardrobeThree;
-      break;
-    case feelsLike < 284:
-      wardrobe = wardrobeFour;
-      wardrobe = rainWardrobe.concat(wardrobe);
-      break;
-    case feelsLike < 289:
-      wardrobe = wardrobeFive;
-      wardrobe = rainWardrobe.concat(wardrobe);
-      break;
-    default:
-      wardrobe = wardrobeSix;
-      wardrobe = rainWardrobe.concat(wardrobe);
-      break;
-  }
-
-  // Loop through wardrobe of videos and append them to the div
-  for (let i = 0; i < wardrobe.length; i++) {
-    // Create a new <div class="fashion"> element
-    const fashionDivElement = document.createElement("div");
-    fashionDivElement.classList.add("fashion");
-
-    // Create video element and set attributes
-    const videoElement = document.createElement("video");
-    videoElement.disablePictureInPicture = true;
-    videoElement.src = `/static/clothingIcons/${wardrobe[i].mp4}`;
-    // Set event listener to the fashion div
-    fashionDivElement.addEventListener("mouseenter", function () {
-      videoElement.currentTime = 0;
-      videoElement.muted = true;
-      videoElement.play();
-    });
-
-    // Append the video element
-    fashionDivElement.appendChild(videoElement);
-
-    // Create fashion-info div
-    const fashionInfoDivElement = document.createElement("div");
-    fashionInfoDivElement.classList.add("fashion-info");
-
-    // Create h4 and p element
-    const h4Element = document.createElement("h4");
-    h4Element.textContent = wardrobe[i].name;
-
-    const pElement = document.createElement("p");
-    pElement.textContent = wardrobe[i].description;
-    // Append h4 and p element
-    fashionInfoDivElement.appendChild(h4Element);
-    fashionInfoDivElement.appendChild(pElement);
-
-    fashionDivElement.appendChild(fashionInfoDivElement);
-    fashionForecast.appendChild(fashionDivElement);
-  }
-};
-
-// Function to count hours left until midnight... times 3, due to how the api call works.
-// This is so that the numbers that the clothing choices are based on are based on when the user is likely to be active
-const countHours = function (list) {
-  // Set global variable "counter" to 0
-  counter = 0;
-  let previousHour = null;
-
-  for (let i = 0; i < list.length; i++) {
-    // Target only the part of the string which lists the hours
-    let currentHour = parseInt(list[i].dt_txt.substring(11, 13));
-
-    if (previousHour < currentHour) {
-      counter++;
-    } else {
-      break; // Stop counting and break the loop to return the counter
-    }
-    previousHour = currentHour;
-  }
-  // Min value should be 1
-  if (counter < 1) {
-    counter = 1;
-  }
-  return counter;
-};
-
-// On click, units should update all values to fahrenheit or celcius using unitConverter():
-unitsElement.addEventListener("click", function () {
-  if (temperatureUnit === "c") {
-    temperatureUnit = "f";
-  } else {
-    temperatureUnit = "c";
-  }
-  // Update content inside temperatureElement, feelsLikeElement, tempMiniElement and tempMaxElement:
-  temperatureElement.innerHTML =
-    unitConvert(weatherInfo.list[0].main.temp).toFixed(1) +
-    "&deg;" +
-    temperatureUnit.toUpperCase();
-  feelsLikeElement.innerHTML =
-    unitConvert(weatherInfo.list[0].main.feels_like).toFixed(1) +
-    "&deg;" +
-    temperatureUnit.toUpperCase();
-  tempMinElement.innerHTML =
-    unitConvert(weatherInfo.list[0].main.temp_min).toFixed(1) +
-    "&deg;" +
-    temperatureUnit.toUpperCase();
-  tempMaxElement.innerHTML =
-    unitConvert(weatherInfo.list[0].main.temp_max).toFixed(1) +
-    "&deg;" +
-    temperatureUnit.toUpperCase();
-});
-
-// Function to calculate celcius or fahrenheit from kelvin
-const unitConvert = function (kelvin) {
-  if (temperatureUnit === "c") {
-    return kelvin - 273;
-  } else {
-    return ((kelvin - 273) * 9) / 5 + 32;
-  }
-};
-
-const updateWeatherInfo = function (data) {
-  cityNameElement.innerHTML = data.city.name;
-
-  descriptionElement.innerHTML = capitalizeFirstLetter(
-    data.list[0].weather[0].description
-  );
-
-  temperatureElement.innerHTML =
-    unitConvert(data.list[0].main.temp).toFixed(1) +
-    "&deg;" +
-    temperatureUnit.toUpperCase();
-
-  feelsLikeElement.innerHTML =
-    unitConvert(data.list[0].main.feels_like).toFixed(1) +
-    "&deg;" +
-    temperatureUnit.toUpperCase();
-
-  tempMinElement.innerHTML =
-    unitConvert(data.list[0].main.temp_min).toFixed(1) +
-    "&deg;" +
-    temperatureUnit.toUpperCase();
-
-  tempMaxElement.innerHTML =
-    unitConvert(data.list[0].main.temp_max).toFixed(1) +
-    "&deg;" +
-    temperatureUnit.toUpperCase();
-
-  humidityElement.innerHTML = data.list[0].main.humidity + " %";
-
-  windElement.innerHTML = data.list[0].wind.speed.toFixed(1) + " m/s";
-
-  sunriseElement.innerHTML = timeString(
-    localTimestamp(data.city.sunrise, data.city.timezone)
-  );
-  sunsetElement.innerHTML = timeString(
-    localTimestamp(data.city.sunset, data.city.timezone)
-  );
-
-  countryElement.innerHTML = data.city.country;
-};
-
-// Function to get the time and date
-const updateClock = function (timeZone) {
-  // Clear any previous instance of updateClock() running
-  clearInterval(intervalId);
-  // Update the clock every second
-  intervalId = setInterval(() => {
-    let userTime = new Date(); // Get user's local time
-    let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
-    let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
-    let defaultDate = new Date(defaultTime);
-    let currentTime = defaultDate.getTime() + timeZone * 1000;
-    let localTime = new Date(currentTime);
-    let hours = String(localTime.getHours()).padStart(2, "0");
-    let minutes = String(localTime.getMinutes()).padStart(2, "0");
-    let seconds = String(localTime.getSeconds()).padStart(2, "0");
-    let timestring = hours + ":" + minutes + ":" + seconds;
-    document.getElementById("clock").innerHTML = timestring;
-
-    updateDate(localTime);
-  }, 1000);
-};
-
-// Function to get date info
-const updateDate = function (date) {
-  let weekdays = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  let months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  let weekday = weekdays[date.getDay()];
-  let dayOfMonth = date.getDate();
-  let year = date.getFullYear();
-
-  weekdayElement.innerHTML = weekday;
-
-  dateElement.innerHTML =
-    months[date.getMonth()] + " " + dayOfMonth + "<br>" + year;
-};
-
-const localTimestamp = function (timestamp, timeZone) {
-  let userTime = new Date(timestamp * 1000); // Get user's local time
-  let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
-  let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
-  let defaultDate = new Date(defaultTime);
-
-  let localTime = defaultDate.getTime() + timeZone * 1000;
-  return localTime;
-};
-
-const timeString = function (timestamp) {
-  let time = new Date(timestamp);
-  let hours = String(time.getHours()).padStart(2, "0");
-  let minutes = String(time.getMinutes()).padStart(2, "0");
-  let timestring = hours + ":" + minutes;
-  return timestring;
-};
-
-// Function to determine day or night
+// Function to determine main weather icon to display
 const updateWeatherIcon = function (id, timeZone, sunrise, sunset) {
   // Find current local time
   let userTime = new Date(); // Get user's local time
@@ -676,6 +389,199 @@ const updateWeatherIcon = function (id, timeZone, sunrise, sunset) {
   }
 };
 
+//Function for fashion selection
+const updateWardrobe = function (data) {
+  // Get the parent element to append the clothing elements
+  const fashionForecast = document.getElementById("fashion-forecast");
+
+  while (fashionForecast.firstChild) {
+    fashionForecast.removeChild(fashionForecast.firstChild);
+  }
+
+  // Loop through the first 4 feels_like values and calculate the average (4*3=12h)
+  // Change 4 to the counter variable, that is, the hours left before midnight. More accurate than simply stating 4 for all
+  let feelsLike = 0;
+  for (let i = 0; i < counter; i++) {
+    feelsLike += data.list[i].main.feels_like;
+  }
+
+  feelsLike /= counter;
+
+  let rainLikely = false;
+  if (rainChance > 30) {
+    rainLikely = true;
+  }
+
+  let rainWardrobe = [];
+
+  let rainAmount = "";
+
+  if (rainLikely) {
+    // Check if any windspeed for next 12 h is greater than 6.7 m/s. Grater windspeeds means that an umbrella is not very useful
+    let canUseUmbrella = false;
+
+    for (let i = 0; i < counter; i++) {
+      let windSpeed = 0;
+      windSpeed = data.list[i].wind.speed;
+      if (windSpeed < 6.7) {
+        canUseUmbrella = true;
+        break;
+      }
+    }
+    // Check if any rain 3h is greater than 9mm
+    let canUseBoots = false;
+
+    for (let i = 0; i < 4; i++) {
+      // ? means that if data.list[] doesn't exist at all, leave it as undefined
+      if (data.list[i].rain?.["3h"] !== undefined) {
+        if (data.list[i].rain["3h"] > 9) {
+          canUseBoots = true;
+          break;
+        }
+      }
+    }
+
+    // Loop through all weather ids, and append them to an array
+    rainOfDay = [];
+
+    for (let i = 0; i < 4; i++) {
+      let id = data.list[i].weather[0].id;
+      switch (id) {
+        case 201:
+        case 501:
+        case 520:
+        case 522:
+          // Append the word 'medium' to the array
+          rainOfDay.push("medium");
+          break;
+        case 202:
+        case 502:
+        case 503:
+        case 511:
+        case 521:
+        case 531:
+          rainOfDay.push("heavy");
+          break;
+        default:
+          rainOfDay.push("light");
+          break;
+      }
+
+      // Check if the array contains the word "heavy"
+      if (rainOfDay.includes("heavy")) {
+        rainAmount = "heavy";
+      } else if (rainOfDay.includes("medium")) {
+        rainAmount = "medium";
+      } else {
+        rainAmount = "light";
+      }
+    }
+
+    if (rainAmount == "heavy") {
+      rainWardrobe.push({
+        name: "Rain-coat",
+        mp4: "rain-coat.mp4",
+        description: "When the umbrella isn't enough",
+      });
+      rainWardrobe.push({
+        name: "Rubber boots",
+        mp4: "puddle.mp4",
+        description: "Ready to jump in some puddles?",
+      });
+    } else if (rainAmount == "medium") {
+      if (canUseUmbrella) {
+        rainWardrobe.push({
+          name: "Umbrella",
+          mp4: "umbrella.mp4",
+          description: "Your trusty old umbrella",
+        });
+      } else {
+        rainWardrobe.push({
+          name: "Rain-coat",
+          mp4: "rain-coat.mp4",
+          description: "When the umbrella isn't enough",
+        });
+      }
+      if (canUseBoots) {
+        rainWardrobe.push({
+          name: "Rubber boots",
+          mp4: "puddle.mp4",
+          description: "Ready to jump in some puddles?",
+        });
+      }
+    } else {
+      rainWardrobe.push({
+        name: "Umbrella",
+        mp4: "umbrella.mp4",
+        description: "Your trusty old umbrella",
+      });
+    }
+  }
+
+  let wardrobe = [];
+  switch (true) {
+    case feelsLike < 261:
+      wardrobe = wardrobeOne;
+      break;
+    case feelsLike < 272:
+      wardrobe = wardrobeTwo;
+      break;
+    case feelsLike < 278:
+      wardrobe = wardrobeThree;
+      break;
+    case feelsLike < 284:
+      wardrobe = wardrobeFour;
+      wardrobe = rainWardrobe.concat(wardrobe);
+      break;
+    case feelsLike < 289:
+      wardrobe = wardrobeFive;
+      wardrobe = rainWardrobe.concat(wardrobe);
+      break;
+    default:
+      wardrobe = wardrobeSix;
+      wardrobe = rainWardrobe.concat(wardrobe);
+      break;
+  }
+
+  // Loop through wardrobe of videos and append them to the div
+  for (let i = 0; i < wardrobe.length; i++) {
+    // Create a new <div class="fashion"> element
+    const fashionDivElement = document.createElement("div");
+    fashionDivElement.classList.add("fashion");
+
+    // Create video element and set attributes
+    const videoElement = document.createElement("video");
+    videoElement.disablePictureInPicture = true;
+    videoElement.src = `/static/clothingIcons/${wardrobe[i].mp4}`;
+    // Set event listener to the fashion div
+    fashionDivElement.addEventListener("mouseenter", function () {
+      videoElement.currentTime = 0;
+      videoElement.muted = true;
+      videoElement.play();
+    });
+
+    // Append the video element
+    fashionDivElement.appendChild(videoElement);
+
+    // Create fashion-info div
+    const fashionInfoDivElement = document.createElement("div");
+    fashionInfoDivElement.classList.add("fashion-info");
+
+    // Create h4 and p element
+    const h4Element = document.createElement("h4");
+    h4Element.textContent = wardrobe[i].name;
+
+    const pElement = document.createElement("p");
+    pElement.textContent = wardrobe[i].description;
+    // Append h4 and p element
+    fashionInfoDivElement.appendChild(h4Element);
+    fashionInfoDivElement.appendChild(pElement);
+
+    fashionDivElement.appendChild(fashionInfoDivElement);
+    fashionForecast.appendChild(fashionDivElement);
+  }
+};
+
 // Function to load history shortcut buttons
 const loadHistory = function (searchData) {
   // Loop through the searches array in data and create buttons
@@ -733,8 +639,105 @@ const loadHistory = function (searchData) {
   });
 };
 
-/////////////
-////////////
+// Function to calculate celcius or fahrenheit from kelvin
+const unitConvert = function (kelvin) {
+  if (temperatureUnit === "c") {
+    return kelvin - 273;
+  } else {
+    return ((kelvin - 273) * 9) / 5 + 32;
+  }
+};
+
+// Function to get date info
+const updateDate = function (date) {
+  let weekdays = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  let months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  let weekday = weekdays[date.getDay()];
+  let dayOfMonth = date.getDate();
+  let year = date.getFullYear();
+
+  weekdayElement.innerHTML = weekday;
+
+  dateElement.innerHTML =
+    months[date.getMonth()] + " " + dayOfMonth + "<br>" + year;
+};
+
+const localTimestamp = function (timestamp, timeZone) {
+  let userTime = new Date(timestamp * 1000); // Get user's local time
+  let gmtOffset = userTime.getTimezoneOffset() * 60; // Get the user's GMT offset in seconds
+  let defaultTime = new Date(userTime.getTime() + gmtOffset * 1000);
+  let defaultDate = new Date(defaultTime);
+
+  let localTime = defaultDate.getTime() + timeZone * 1000;
+  return localTime;
+};
+
+const timeString = function (timestamp) {
+  let time = new Date(timestamp);
+  let hours = String(time.getHours()).padStart(2, "0");
+  let minutes = String(time.getMinutes()).padStart(2, "0");
+  let timestring = hours + ":" + minutes;
+  return timestring;
+};
+
+const capitalizeFirstLetter = function (string) {
+  return string[0].toUpperCase() + string.slice(1);
+};
+
+////////////// Event Triggers ////////////
+// Run this code when the user first visits the site:
+document.addEventListener("DOMContentLoaded", function () {
+  // Setup initial temperature unit
+  temperatureUnit = "c";
+
+  // Setup time
+  intervalId = null;
+  counter = countHours(weatherInfo.list);
+  updateClock(weatherInfo.city.timezone);
+  dayLightLeft(
+    weatherInfo.city.sunrise,
+    weatherInfo.city.sunset,
+    weatherInfo.city.timezone
+  );
+  updateWeatherIcon(
+    weatherInfo.list[0].weather[0].id,
+    weatherInfo.city.timezone,
+    weatherInfo.city.sunrise,
+    weatherInfo.city.sunset
+  );
+
+  maxRainChance(weatherInfo.list);
+
+  // Setup history shortcut buttons
+  loadHistory(searches);
+
+  updateWeatherInfo(weatherInfo);
+
+  //TODO: Update algorithm to find average of feels_like, instead of just the current one
+  updateWardrobe(weatherInfo);
+});
 
 // Code for button to get user's location by geolocation
 document.getElementById("getLocation").addEventListener("click", function () {
@@ -779,39 +782,6 @@ document.getElementById("getLocation").addEventListener("click", function () {
       input.classList.remove("red");
     }, 2000);
   }
-});
-
-// Main
-// Run this code when the user first visits the site:
-document.addEventListener("DOMContentLoaded", function () {
-  // Setup initial temperature unit
-  temperatureUnit = "c";
-
-  // Setup time
-  intervalId = null;
-  counter = countHours(weatherInfo.list);
-  updateClock(weatherInfo.city.timezone);
-  dayLightLeft(
-    weatherInfo.city.sunrise,
-    weatherInfo.city.sunset,
-    weatherInfo.city.timezone
-  );
-  updateWeatherIcon(
-    weatherInfo.list[0].weather[0].id,
-    weatherInfo.city.timezone,
-    weatherInfo.city.sunrise,
-    weatherInfo.city.sunset
-  );
-
-  maxRainChance(weatherInfo.list);
-
-  // Setup history shortcut buttons
-  loadHistory(searches);
-
-  updateWeatherInfo(weatherInfo);
-
-  //TODO: Update algorithm to find average of feels_like, instead of just the current one
-  updateWardrobe(weatherInfo);
 });
 
 // Search city name by typing
@@ -863,10 +833,36 @@ form.addEventListener("submit", (event) => {
         // Clear existing buttons
         historyContainer.innerHTML = "";
 
-        // Loop through the searches array in data and create buttons
+        // Loop through the searches array in data and re-add buttons
         loadHistory(data[1]);
       }
     });
+});
+
+// On click, units should update all values to fahrenheit or celcius using unitConverter():
+unitsElement.addEventListener("click", function () {
+  if (temperatureUnit === "c") {
+    temperatureUnit = "f";
+  } else {
+    temperatureUnit = "c";
+  }
+  // Update content inside temperatureElement, feelsLikeElement, tempMiniElement and tempMaxElement:
+  temperatureElement.innerHTML =
+    unitConvert(weatherInfo.list[0].main.temp).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  feelsLikeElement.innerHTML =
+    unitConvert(weatherInfo.list[0].main.feels_like).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  tempMinElement.innerHTML =
+    unitConvert(weatherInfo.list[0].main.temp_min).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
+  tempMaxElement.innerHTML =
+    unitConvert(weatherInfo.list[0].main.temp_max).toFixed(1) +
+    "&deg;" +
+    temperatureUnit.toUpperCase();
 });
 
 // Make wardrobes for the weather

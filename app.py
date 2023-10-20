@@ -1,9 +1,7 @@
-from datetime import datetime
 from flask import Flask, render_template, request, jsonify, session
 from dotenv import load_dotenv
 import os
 import requests
-import json
 import sqlite3
 
 # Configure application
@@ -67,7 +65,7 @@ def index():
         return jsonify(weather_info, searches)
     else:
         # Using the GET method
-        #Check if session['lat'] and session['lon'] are not None, indicating first time user
+        #Check if session['lat'] and session['lon'] are None, indicating first time user
         if session.get('lat') is None or session.get('lon') is None:
             # Request for the user's IP address
             ip = requests.get('https://api64.ipify.org?format=json').json()
@@ -85,6 +83,8 @@ def index():
             session['lon'] = location_data['lon']
 
             weather_info = getWeatherInfo(session['lat'], session['lon'], key)
+            # Make sure 'searches' does not return Undefined
+            searches = []
 
             # Return weather_info back to the browser
             return render_template('index.html', weather_info=weather_info)
@@ -112,10 +112,3 @@ def shortcut():
     session['lon'] = weather_data['city']['coord']['lon']
     weather_info = weather_data
     return jsonify(weather_info)
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-# Convert from Unix timestamp format to readable format
-        #sunrise = datetime.utcfromtimestamp(sunrise).strftime('%Y-%m-%d %H:%M:%S')
-        #sunset = datetime.utcfromtimestamp(sunset).strftime('%Y-%m-%d %H:%M:%S')

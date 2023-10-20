@@ -418,7 +418,6 @@ svg {
     min-height: 100vh;
     flex-wrap: nowrap;
     width: 400px;
-    gap: 0;
   }
 
   h1 {
@@ -439,5 +438,10 @@ svg {
 
   .three {
     order: 3;
+    height: auto;
+  }
+
+  .weatherCard {
+    margin: 0;
   }
 }
